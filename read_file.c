@@ -4,32 +4,32 @@
 
 word_t get_word(FILE* in)
 {
-    unsigned char tmp;
-    word_t ret = 0;
-    int i;
-    for (i = 0; i < 4; i++) {
-        fread(&tmp, sizeof(unsigned char), 1, in);
-        ret = ret << 8;
-        ret = ret | tmp;
-    }
-    return ret;
+	unsigned char tmp;
+	word_t ret = 0;
+	int i;
+	for (i = 0; i < 4; i++) {
+		fread(&tmp, sizeof(unsigned char), 1, in);
+		ret = ret << 8;
+		ret = ret | tmp;
+	}
+	return ret;
 }
 
-word_t get_ins(word_t** ins)
+word_t init_mem(word_t* ins, char option)
 {
-    FILE* iimage = fopen("iimage.bin", "rb");
+	FILE* file;
+	if (option == 'i') file = fopen("iimage.bin", "rb");
+	else file = fopen("dimage.bin", "rb");
 
-    word_t init_pc = get_word(iimage);
-    
-    int n = get_word(iimage);
-    
-    *ins = (word_t*)malloc(sizeof(word_t)*n);
+	word_t init_addr = get_word(file);
 
-    int i;
-    for (i = 0; i < n; i++)
-        (*ins)[i] = get_word(iimage);
-    
-    fclose(iimage);
+	int n = get_word(file);
 
-    return init_pc;
+	int i;
+	for (i = 0; i < n; i++)
+		ins[i+init_addr] = get_word(file);
+
+	fclose(file);
+
+	return init_addr;
 }
