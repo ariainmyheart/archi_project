@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "cpu.h"
+#include "include/cpu.h"
 
 struct cpu_struct* alloc_cpu()
 {
@@ -16,5 +16,8 @@ void free_cpu(struct cpu_struct* cpu)
 		free(cpu->ins);
 	if (!cpu->mem)
 		free(cpu->mem);
+	if (!cpu->current_ins)
+		free(cpu->current_ins);
 	free(cpu);
 }
+

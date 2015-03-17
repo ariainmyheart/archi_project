@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "instruction.h"
+#include "include/instruction.h"
 
 word_t get_word(FILE* in)
 {
