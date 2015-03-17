@@ -1,4 +1,6 @@
 *.o
-a.out
 *.bin
+*.rpt
+a.out
 test
+single_cycle
