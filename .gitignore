@@ -1,6 +1,7 @@
 *.o
 *.bin
 *.rpt
+*.exe
 a.out
 test
 single_cycle
