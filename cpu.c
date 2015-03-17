@@ -3,12 +3,17 @@
 #include <string.h>
 #include "include/cpu.h"
 
+int bit_extend(int bit, int offset)
+{
+	return (bit << (32-offset)) >> offset;
+}
+
 struct cpu_struct* alloc_cpu()
 {
 	struct cpu_struct* cpu = (struct cpu_struct*)malloc(sizeof(struct cpu_struct));
 	memset(cpu, 0, sizeof(struct cpu_struct));
 	cpu->pc = init_mem(cpu->ins, 'i');
-//	init_mem(cpu->mem, 'd');
+	cpu->reg[29] = init_mem(cpu->mem, 'd');
 	return cpu;
 }
 
@@ -40,7 +45,8 @@ void decode(struct cpu_struct* cpu, word_t ins)
 	dec->rd = extract(dec->ins, 15, 11);
 	dec->shamt = extract(dec->ins, 10, 6);
 	dec->funct = extract(dec->ins, 5, 0);
-	dec->imm = extract(dec->ins, 15, 0);
+	dec->imm = bit_extend(extract(dec->ins, 15, 0), 16);
+	dec->immu = extract(dec->ins, 15, 0);
 	dec->addr = extract(dec->ins, 25, 0);
         cpu->current_ins = dec;
 }
@@ -48,14 +54,17 @@ void decode(struct cpu_struct* cpu, word_t ins)
 void execute(struct cpu_struct* cpu)
 {
 	cpu->pc += 4;
-	printf("ins: %08x\n", cpu->current_ins->ins);
-	printf("\top: %x\n", cpu->current_ins->op);
-	printf("\trs: %x\n", cpu->current_ins->rs);
-	printf("\trt: %x\n", cpu->current_ins->rt);
-	printf("\trd: %x\n", cpu->current_ins->rd);
-	printf("\tshamt: %x\n", cpu->current_ins->shamt);
-	printf("\tfunct: %x\n", cpu->current_ins->funct);
-	printf("\timm: %x\n", cpu->current_ins->imm);
-	printf("\taddr: %x\n", cpu->current_ins->addr);
+	switch (cpu->current_ins->op) {
+		case 0:
+			r_type(cpu);
+			break;
+		case 2:
+		case 3:
+			j_type(cpu);
+			break;
+		default:
+			i_type(cpu);
+			break;
+	}
 }
 

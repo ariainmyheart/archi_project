@@ -33,8 +33,10 @@ word_t init_mem(byte_t* ins, char option)
 	int n = get_word(file);
 
 	int i;
-	for (i = 0; i < n*4; i++)
-		ins[i+init_addr] = get_byte(file);
+	for (i = 0; i < n*4; i++) {
+		if (option == 'i') ins[i+init_addr] = get_byte(file);
+		else ins[i] = get_byte(file);
+	}
 
 	fclose(file);
 
