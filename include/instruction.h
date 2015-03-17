@@ -1,7 +1,7 @@
 #ifndef __INSTRUCTION_H__
 #define __INSTRUCTION_H__
 
-#define HALT 0xffffffff
+#define HALT 0x3f
 
 typedef unsigned int word_t;
 
@@ -14,9 +14,10 @@ struct ins_struct {
 	int shamt;
 	int funct;
 	int imm;
+	int addr;
 };
 
 int extract(word_t ins, int left, int right);
-struct ins_struct* decode(word_t ins);
+int is_halt(word_t ins);
 
 #endif
