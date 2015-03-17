@@ -2,20 +2,27 @@
 #include <stdlib.h>
 #include "include/instruction.h"
 
+byte_t get_byte(FILE* in)
+{
+	byte_t ret;
+	fread(&ret, sizeof(byte_t), 1, in);
+	return ret;
+}
+
 word_t get_word(FILE* in)
 {
-	unsigned char tmp;
+	byte_t tmp;
 	word_t ret = 0;
 	int i;
 	for (i = 0; i < 4; i++) {
-		fread(&tmp, sizeof(unsigned char), 1, in);
+		tmp = get_byte(in);
 		ret = ret << 8;
 		ret = ret | tmp;
 	}
 	return ret;
 }
 
-word_t init_mem(word_t* ins, char option)
+word_t init_mem(byte_t* ins, char option)
 {
 	FILE* file;
 	if (option == 'i') file = fopen("iimage.bin", "rb");
@@ -26,8 +33,8 @@ word_t init_mem(word_t* ins, char option)
 	int n = get_word(file);
 
 	int i;
-	for (i = 0; i < n; i++)
-		ins[i+init_addr] = get_word(file);
+	for (i = 0; i < n*4; i++)
+		ins[i+init_addr] = get_byte(file);
 
 	fclose(file);
 

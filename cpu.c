@@ -19,10 +19,21 @@ void free_cpu(struct cpu_struct* cpu)
 	free(cpu);
 }
 
-void decode(struct cpu_struct* cpu)
+word_t fetch(struct cpu_struct* cpu)
+{
+	word_t ins = 0;
+	int i;
+	for (i = 0; i < 4; i++) {
+		ins <<= 8;
+		ins |= cpu->ins[i+cpu->pc];
+	}
+	return ins;
+}
+
+void decode(struct cpu_struct* cpu, word_t ins)
 {
 	struct ins_struct* dec = (struct ins_struct*)malloc(sizeof(struct ins_struct));
-	dec->ins = cpu->ins[cpu->pc];
+	dec->ins = ins;
 	dec->op = extract(dec->ins, 31, 26);
 	dec->rs = extract(dec->ins, 25, 21);
 	dec->rt = extract(dec->ins, 20, 16);
@@ -36,8 +47,15 @@ void decode(struct cpu_struct* cpu)
 
 void execute(struct cpu_struct* cpu)
 {
-	printf("%08x\n", cpu->current_ins->ins);
-        printf("%x\n", cpu->current_ins->op);
-        printf("%x\n", cpu->current_ins->addr);
+	cpu->pc += 4;
+	printf("ins: %08x\n", cpu->current_ins->ins);
+	printf("\top: %x\n", cpu->current_ins->op);
+	printf("\trs: %x\n", cpu->current_ins->rs);
+	printf("\trt: %x\n", cpu->current_ins->rt);
+	printf("\trd: %x\n", cpu->current_ins->rd);
+	printf("\tshamt: %x\n", cpu->current_ins->shamt);
+	printf("\tfunct: %x\n", cpu->current_ins->funct);
+	printf("\timm: %x\n", cpu->current_ins->imm);
+	printf("\taddr: %x\n", cpu->current_ins->addr);
 }
 

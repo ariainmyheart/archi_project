@@ -6,11 +6,11 @@
 int main()
 {
 	struct cpu_struct* cpu = alloc_cpu();
-        cpu->current_ins = decode(cpu->ins[0]);
-        printf("%x\n", cpu->current_ins->op);
-        printf("%x\n", cpu->current_ins->rs);
-        printf("%x\n", cpu->current_ins->rt);
-        printf("%x\n", cpu->current_ins->imm);
+	word_t ins;
+	while (!is_halt(ins = fetch(cpu))) {
+		decode(cpu, ins);
+		execute(cpu);
+	}
 	free_cpu(cpu);
 	return 0;
 }

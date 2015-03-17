@@ -3,6 +3,7 @@
 
 #define HALT 0x3f
 
+typedef unsigned char byte_t;
 typedef unsigned int word_t;
 
 struct ins_struct {
