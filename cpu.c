@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "include/readfile.h"
 #include "include/cpu.h"
 
 int bit_extend(int bit, int offset)
@@ -19,8 +20,6 @@ struct cpu_struct* alloc_cpu()
 
 void free_cpu(struct cpu_struct* cpu)
 {
-	if (cpu->current_ins)
-		free(cpu->current_ins);
 	free(cpu);
 }
 
@@ -37,24 +36,22 @@ word_t fetch(struct cpu_struct* cpu)
 
 void decode(struct cpu_struct* cpu, word_t ins)
 {
-	struct ins_struct* dec = (struct ins_struct*)malloc(sizeof(struct ins_struct));
-	dec->ins = ins;
-	dec->op = extract(dec->ins, 31, 26);
-	dec->rs = extract(dec->ins, 25, 21);
-	dec->rt = extract(dec->ins, 20, 16);
-	dec->rd = extract(dec->ins, 15, 11);
-	dec->shamt = extract(dec->ins, 10, 6);
-	dec->funct = extract(dec->ins, 5, 0);
-	dec->imm = bit_extend(extract(dec->ins, 15, 0), 16);
-	dec->immu = extract(dec->ins, 15, 0);
-	dec->addr = extract(dec->ins, 25, 0);
-        cpu->current_ins = dec;
+	cpu->current_ins.ins = ins;
+	cpu->current_ins.op = extract(ins, 31, 26);
+	cpu->current_ins.rs = extract(ins, 25, 21);
+	cpu->current_ins.rt = extract(ins, 20, 16);
+	cpu->current_ins.rd = extract(ins, 15, 11);
+	cpu->current_ins.shamt = extract(ins, 10, 6);
+	cpu->current_ins.funct = extract(ins, 5, 0);
+	cpu->current_ins.imm = bit_extend(extract(ins, 15, 0), 16);
+	cpu->current_ins.immu = extract(ins, 15, 0);
+	cpu->current_ins.addr = extract(ins, 25, 0);
 }
 
 void execute(struct cpu_struct* cpu)
 {
 	cpu->pc += 4;
-	switch (cpu->current_ins->op) {
+	switch (cpu->current_ins.op) {
 		case 0:
 			r_type(cpu);
 			break;

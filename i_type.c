@@ -3,7 +3,7 @@
 
 void i_type(struct cpu_struct* cpu)
 {
-	struct ins_struct* ins = cpu->current_ins;
+	struct ins_struct* ins = &cpu->current_ins;
 	int s = cpu->reg[ins->rs];
 	int t = ins->rt;
 	int c = ins->imm;

@@ -3,7 +3,7 @@
 
 void j_type(struct cpu_struct* cpu)
 {
-	struct ins_struct* ins = cpu->current_ins;
+	struct ins_struct* ins = &cpu->current_ins;
 	switch (ins->op) {
 		case JAL:
 			cpu->reg[31] = cpu->pc;

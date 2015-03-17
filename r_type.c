@@ -3,12 +3,12 @@
 
 void r_type(struct cpu_struct* cpu)
 {
-	struct ins_struct* ins = cpu->current_ins;
+	struct ins_struct* ins = &cpu->current_ins;
 	int s = cpu->reg[ins->rs];
 	int t = cpu->reg[ins->rt];
 	int d = ins->rd;
 	int c = ins->shamt;
-	switch (cpu->current_ins->funct) {
+	switch (ins->funct) {
 		case ADD:
 			cpu->reg[d] = s + t;
 			break;
