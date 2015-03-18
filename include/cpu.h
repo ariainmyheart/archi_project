@@ -11,6 +11,7 @@ struct cpu_struct {
 	struct ins_struct current_ins;
 };
 
+int sign_extend(int num, int len);
 struct cpu_struct* alloc_cpu();
 void free_cpu(struct cpu_struct* cpu);
 void free_cpu(struct cpu_struct* cpu);

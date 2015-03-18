@@ -4,9 +4,9 @@
 #include "include/readfile.h"
 #include "include/cpu.h"
 
-int bit_extend(int bit, int offset)
+int sign_extend(int num, int len)
 {
-	return (bit << (32-offset)) >> offset;
+	return (num << (32-len)) >> (32-len);
 }
 
 struct cpu_struct* alloc_cpu()
@@ -43,7 +43,7 @@ void decode(struct cpu_struct* cpu, word_t ins)
 	cpu->current_ins.rd = extract(ins, 15, 11);
 	cpu->current_ins.shamt = extract(ins, 10, 6);
 	cpu->current_ins.funct = extract(ins, 5, 0);
-	cpu->current_ins.imm = bit_extend(extract(ins, 15, 0), 16);
+	cpu->current_ins.imm = sign_extend(extract(ins, 15, 0), 16);
 	cpu->current_ins.immu = extract(ins, 15, 0);
 	cpu->current_ins.addr = extract(ins, 25, 0);
 }
