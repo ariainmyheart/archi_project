@@ -53,7 +53,7 @@ struct ins_struct {
 };
 
 int extract(word_t ins, int left, int right);
-int bit_extend(int bit, int offset);
 int is_halt(word_t ins);
+void print_ins(struct ins_struct* ins);
 
 #endif
