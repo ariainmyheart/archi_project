@@ -45,32 +45,31 @@ void i_type(struct cpu_struct* cpu)
 			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case SW:
-			cpu->mem[s+c] = (cpu->reg[t] >> 24) & 0xff;
-			cpu->mem[s+c+1] = (cpu->reg[t] >> 16) & 0xff;
-			cpu->mem[s+c+2] = (cpu->reg[t] >> 8) & 0xff;
-			cpu->mem[s+c+3] = cpu->reg[t] & 0xff;
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			save_memory(cpu, cpu->reg[t], addr, 4, &status); //mem[addr] = cpu->reg[t]
 			break;
 		case SH:
-			cpu->mem[s+c] = (cpu->reg[t] >> 8) & 0xff;
-			cpu->mem[s+c+1] = cpu->reg[t] & 0xff;
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			save_memory(cpu, cpu->reg[t], addr, 2, &status); //mem[addr] = cpu->reg[t]
 			break;
 		case SB:
-			cpu->mem[s+c] = cpu->reg[t] & 0xff;
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			save_memory(cpu, cpu->reg[t], addr, 1, &status); //mem[addr] = cpu->reg[t]
 			break;
 		case LUI:
-			cpu->reg[t] = cu << 16;
+			write_register(cpu, t, cu << 16, &status);
 			break;
 		case ANDI:
-			cpu->reg[t] = s & cu;
+			write_register(cpu, t, s & cu, &status);
 			break;
 		case ORI:
-			cpu->reg[t] = s | cu;
+			write_register(cpu, t, s | cu, &status);
 			break;
 		case NORI:
-			cpu->reg[t] = ~(s | cu);
+			write_register(cpu, t, ~(s | cu), &status);
 			break;
 		case SLTI:
-			cpu->reg[t] = s < c;
+			write_register(cpu, t, s < c, &status);
 			break;
 		case BEQ:
 			if (s == cpu->reg[t]) cpu->pc += 4*c;

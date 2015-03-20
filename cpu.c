@@ -79,6 +79,15 @@ word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status)
 	return value;
 }
 
+void save_memory(struct cpu_struct* cpu, word_t value, word_t addr, int byte, int* status)
+{
+	int i;
+	for (i = byte-1; i >= 0; i--) {
+		cpu->mem[addr+i] = value & 0xff;
+		value >>= 8;
+	}
+}
+
 void write_register(struct cpu_struct* cpu, int num, word_t value, int* status)
 {
 	if (num == 0) {
