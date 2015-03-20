@@ -1,50 +1,66 @@
 #include "include/cpu.h"
 #include "include/instruction.h"
+#include "include/error.h"
 
-void r_type(struct cpu_struct* cpu)
+int r_type(struct cpu_struct* cpu)
 {
 	struct ins_struct* ins = &cpu->current_ins;
 	int s = cpu->reg[ins->rs];
 	int t = cpu->reg[ins->rt];
 	int d = ins->rd;
 	int c = ins->shamt;
+	word_t value;
+	int status = 0;
+
 	switch (ins->funct) {
 		case ADD:
-			cpu->reg[d] = s + t;
+			value = check_num_overflow(s, t, &status);
+			write_register(cpu, d, value, &status);
 			break;
 		case SUB:
-			cpu->reg[d] = s - t;
+			value = check_num_overflow(s, -t, &status);
+			write_register(cpu, d, value, &status);
 			break;
 		case AND:
-			cpu->reg[d] = s & t;
+			value = s & t;
+			write_register(cpu, d, value, &status);
 			break;
 		case OR:
-			cpu->reg[d] = s | t;
+			value = s | t;
+			write_register(cpu, d, value, &status);
 			break;
 		case XOR:
-			cpu->reg[d] = s ^ t;
+			value = s ^ t;
+			write_register(cpu, d, value, &status);
 			break;
 		case NOR:
-			cpu->reg[d] = ~(s | t);
+			value = ~(s | t);
+			write_register(cpu, d, value, &status);
 			break;
 		case NADD:
-			cpu->reg[d] = ~(s & t);
+			value = ~(s & t);
+			write_register(cpu, d, value, &status);
 			break;
 		case SLT:
-			cpu->reg[d] = (s < t) ? 1 : 0;
+			value = (s < t) ? 1 : 0;
+			write_register(cpu, d, value, &status);
 			break;
 		case SLL:
-			cpu->reg[d] = t << c;
+			value = t << c;
+			write_register(cpu, d, value, &status);
 			break;
 		case SRL:
-			cpu->reg[d] = cpu->reg[ins->rt] >> c;
+			value = cpu->reg[ins->rt] >> c;
+			write_register(cpu, d, value, &status);
 			break;
 		case SRA:
-			cpu->reg[d] = t >> c;
+			value = t >> c;
+			write_register(cpu, d, value, &status);
 			break;
 		case JR:
 			cpu->pc = s;
 			break;
 	}
+	return status;
 }
 

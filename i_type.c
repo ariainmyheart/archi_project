@@ -1,72 +1,75 @@
 #include "include/cpu.h"
 #include "include/instruction.h"
+#include "include/error.h"
 
-void i_type(struct cpu_struct* cpu)
+int i_type(struct cpu_struct* cpu)
 {
 	struct ins_struct* ins = &cpu->current_ins;
 	int s = cpu->reg[ins->rs];
 	int t = ins->rt;
 	int c = ins->imm;
 	int cu = ins->immu;
+	word_t value, addr;
+	int status = 0;
 	
 	switch (ins->op) {
 		case ADDI:
-			cpu->reg[t] = s + c;
+			value = check_num_overflow(s, c, &status); //value = s + c
+			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case LW:
-			cpu->reg[t] = 0;
-			cpu->reg[t] |= cpu->mem[s+c] << 24;
-			cpu->reg[t] |= cpu->mem[s+c+1] << 16;
-			cpu->reg[t] |= cpu->mem[s+c+2] << 8;
-			cpu->reg[t] |= cpu->mem[s+c+3];
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			value = load_memory(cpu, addr, 4, &status); //value = mem[addr]
+			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case LH:
-			cpu->reg[t] = 0;
-			cpu->reg[t] |= cpu->mem[s+c] << 8;
-			cpu->reg[t] |= cpu->mem[s+c+1];
-			cpu->reg[t] = sign_extend(cpu->reg[t], 16);
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			value = load_memory(cpu, addr, 2, &status); //value = mem[addr]
+			value = sign_extend(value, 16);
+			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case LHU:
-			cpu->reg[t] = 0;
-			cpu->reg[t] |= cpu->mem[s+c] << 8;
-			cpu->reg[t] |= cpu->mem[s+c+1];
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			value = load_memory(cpu, addr, 2, &status); //value = mem[addr]
+			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case LB:
-			cpu->reg[t] = 0;
-			cpu->reg[t] |= cpu->mem[s+c];
-			cpu->reg[t] = sign_extend(cpu->reg[t], 8);
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			value = load_memory(cpu, addr, 1, &status); //value = mem[addr]
+			value = sign_extend(value, 8);
+			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case LBU:
-			cpu->reg[t] = 0;
-			cpu->reg[t] |= cpu->mem[s+c];
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			value = load_memory(cpu, addr, 1, &status); //value = mem[addr]
+			write_register(cpu, t, value, &status); //reg[t] = value
 			break;
 		case SW:
-			cpu->mem[s+c] = (cpu->reg[t] >> 24) & 0xff;
-			cpu->mem[s+c+1] = (cpu->reg[t] >> 16) & 0xff;
-			cpu->mem[s+c+2] = (cpu->reg[t] >> 8) & 0xff;
-			cpu->mem[s+c+3] = cpu->reg[t] & 0xff;
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			save_memory(cpu, cpu->reg[t], addr, 4, &status); //mem[addr] = cpu->reg[t]
 			break;
 		case SH:
-			cpu->mem[s+c] = (cpu->reg[t] >> 8) & 0xff;
-			cpu->mem[s+c+1] = cpu->reg[t] & 0xff;
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			save_memory(cpu, cpu->reg[t], addr, 2, &status); //mem[addr] = cpu->reg[t]
 			break;
 		case SB:
-			cpu->mem[s+c] = cpu->reg[t] & 0xff;
+			addr = check_num_overflow(s, c, &status); //addr = s + c
+			save_memory(cpu, cpu->reg[t], addr, 1, &status); //mem[addr] = cpu->reg[t]
 			break;
 		case LUI:
-			cpu->reg[t] = cu << 16;
+			write_register(cpu, t, cu << 16, &status);
 			break;
 		case ANDI:
-			cpu->reg[t] = s & cu;
+			write_register(cpu, t, s & cu, &status);
 			break;
 		case ORI:
-			cpu->reg[t] = s | cu;
+			write_register(cpu, t, s | cu, &status);
 			break;
 		case NORI:
-			cpu->reg[t] = ~(s | cu);
+			write_register(cpu, t, ~(s | cu), &status);
 			break;
 		case SLTI:
-			cpu->reg[t] = s < c;
+			write_register(cpu, t, s < c, &status);
 			break;
 		case BEQ:
 			if (s == cpu->reg[t]) cpu->pc += 4*c;
@@ -75,4 +78,5 @@ void i_type(struct cpu_struct* cpu)
 			if (s != cpu->reg[t]) cpu->pc += 4*c;
 			break;
 	}
+	return status;
 }

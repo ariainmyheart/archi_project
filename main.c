@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "include/instruction.h"
 #include "include/cpu.h"
+#include "include/error.h"
 
 void snapshot(struct cpu_struct* cpu, int cycle, FILE* snap)
 {
@@ -16,16 +17,21 @@ void snapshot(struct cpu_struct* cpu, int cycle, FILE* snap)
 int main()
 {
 	FILE* snap = fopen("snapshot.rpt", "w");
+	FILE* err = fopen("error_dump.rpt", "w");
 	struct cpu_struct* cpu = alloc_cpu();
 	word_t ins;
+	int status, flag = 0;
 	int cycle = 0;
-	while (!is_halt(ins = fetch(cpu))) {
+	while (!is_halt(ins = fetch(cpu)) && !flag) {
 		snapshot(cpu, cycle++, snap);
 		decode(cpu, ins);
-		execute(cpu);
+		status = execute(cpu);
+		flag = error_dump(err, cycle, status);
 	}
-	snapshot(cpu, cycle++, snap);
+	if (!flag)
+		snapshot(cpu, cycle++, snap);
 	free_cpu(cpu);
 	fclose(snap);
+	fclose(err);
 	return 0;
 }
