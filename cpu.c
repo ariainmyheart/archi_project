@@ -49,29 +49,28 @@ void decode(struct cpu_struct* cpu, word_t ins)
 	cpu->current_ins.addr = extract(ins, 25, 0);
 }
 
-void execute(struct cpu_struct* cpu)
+int execute(struct cpu_struct* cpu)
 {
 	cpu->pc += 4;
 	switch (cpu->current_ins.op) {
 		case 0:
-			r_type(cpu);
-			break;
+			return r_type(cpu);
 		case 2:
 		case 3:
-			j_type(cpu);
-			break;
+			return j_type(cpu);
 		default:
-			i_type(cpu);
-			break;
+			return i_type(cpu);
 	}
 }
 
 word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status)
 {
 	word_t value = 0;
+	int flag = 0;
+	flag = check_addr_overflow(addr, status) | check_data_misaligned(addr, byte, status);
+	if (flag) return 0;
+
 	int i;
-	//if (check_addr_overflow(addr, status)) return 0;
-	//if (check_data_align(addr, byte, status)) return 0;
 	for (i = 0; i < byte; i++) {
 		value <<= 8;
 		value |= cpu->mem[addr+i];
@@ -81,6 +80,10 @@ word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status)
 
 void save_memory(struct cpu_struct* cpu, word_t value, word_t addr, int byte, int* status)
 {
+	int flag = 0;
+	flag = check_addr_overflow(addr, status) | check_data_misaligned(addr, byte, status);
+	if (flag) return;
+
 	int i;
 	for (i = byte-1; i >= 0; i--) {
 		cpu->mem[addr+i] = value & 0xff;

@@ -2,7 +2,7 @@
 #include "include/instruction.h"
 #include "include/error.h"
 
-void r_type(struct cpu_struct* cpu)
+int r_type(struct cpu_struct* cpu)
 {
 	struct ins_struct* ins = &cpu->current_ins;
 	int s = cpu->reg[ins->rs];
@@ -61,5 +61,6 @@ void r_type(struct cpu_struct* cpu)
 			cpu->pc = s;
 			break;
 	}
+	return status;
 }
 

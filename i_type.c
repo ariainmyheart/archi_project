@@ -2,7 +2,7 @@
 #include "include/instruction.h"
 #include "include/error.h"
 
-void i_type(struct cpu_struct* cpu)
+int i_type(struct cpu_struct* cpu)
 {
 	struct ins_struct* ins = &cpu->current_ins;
 	int s = cpu->reg[ins->rs];
@@ -78,4 +78,5 @@ void i_type(struct cpu_struct* cpu)
 			if (s != cpu->reg[t]) cpu->pc += 4*c;
 			break;
 	}
+	return status;
 }
