@@ -21,5 +21,7 @@ void execute(struct cpu_struct* cpu);
 void i_type(struct cpu_struct* cpu);
 void j_type(struct cpu_struct* cpu);
 void r_type(struct cpu_struct* cpu);
+word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status);
+void write_register(struct cpu_struct* cpu, int num, word_t value, int* status);
 
 #endif

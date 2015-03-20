@@ -3,6 +3,7 @@
 #include <string.h>
 #include "include/readfile.h"
 #include "include/cpu.h"
+#include "include/error.h"
 
 int sign_extend(int num, int len)
 {
@@ -62,6 +63,28 @@ void execute(struct cpu_struct* cpu)
 		default:
 			i_type(cpu);
 			break;
+	}
+}
+
+word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status)
+{
+	word_t value = 0;
+	int i;
+	//if (check_addr_overflow(addr, status)) return 0;
+	//if (check_data_align(addr, byte, status)) return 0;
+	for (i = 0; i < byte; i++) {
+		value <<= 8;
+		value |= cpu->mem[addr+i];
+	}
+	return value;
+}
+
+void write_register(struct cpu_struct* cpu, int num, word_t value, int* status)
+{
+	if (num == 0) {
+		*status |= WRITE_REG_ZERO;
+	} else {
+		cpu->reg[num] = value;
 	}
 }
 
