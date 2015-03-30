@@ -3,6 +3,4 @@
 *.rpt
 *.exe
 a.out
-test
-test.c
 single_cycle
