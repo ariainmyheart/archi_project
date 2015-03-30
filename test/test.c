@@ -21,6 +21,7 @@ int main()
 {
 	printf("[test readfile.c]\n");
 	test_get_byte();
+	test_get_word();
 	printf("[test cpu.c]\n");
 	test_sign_extend();
 	return 0;
