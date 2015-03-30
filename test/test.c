@@ -24,5 +24,7 @@ int main()
 	test_get_word();
 	printf("[test cpu.c]\n");
 	test_sign_extend();
+	test_fetch();
+	test_decode();
 	return 0;
 }

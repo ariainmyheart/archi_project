@@ -6,6 +6,8 @@ void test_get_byte();
 void test_get_word();
 void test_init_mem();
 void test_sign_extend();
+void test_fetch();
+void test_decode();
 
 #endif
 
