@@ -47,7 +47,8 @@ int r_type(struct cpu_struct* cpu)
 			break;
 		case SLL:
 			value = t << c;
-			write_register(cpu, d, value, &status);
+			if (ins->ins != 0)
+				write_register(cpu, d, value, &status);
 			break;
 		case SRL:
 			value = cpu->reg[ins->rt] >> c;
