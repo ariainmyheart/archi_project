@@ -8,6 +8,10 @@ void test_init_mem();
 void test_sign_extend();
 void test_fetch();
 void test_decode();
+void test_add();
+void test_slt();
+void test_srl();
+void test_sra();
 
 #endif
 

@@ -6,6 +6,7 @@ test_obj = $(patsubst %.c, %.o, $(test_src))
 
 all: $(main_obj)
 	gcc -o single_cycle $^ $(CCFLAGS)
+test: CCFLAGS+=-g
 test: $(test_obj) $(filter-out main.o, $(main_obj))
 	gcc -o test/test $^ $(CCFLAGS)
 $(main_obj): %.o: %.c
