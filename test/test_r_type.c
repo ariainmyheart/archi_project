@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include "../include/readfile.h"
 #include "../include/cpu.h"
@@ -11,6 +12,7 @@ void test_add()
 {
 	printf("===test ADD===\n");
 	struct cpu_struct cpu;
+	memset(&cpu, 0, sizeof(cpu));
 	cpu.current_ins.rs = 1;
 	cpu.current_ins.rt = 2;
 	cpu.current_ins.rd = 3;
@@ -32,6 +34,7 @@ void test_slt()
 {
 	printf("===test SLT===\n");
 	struct cpu_struct cpu;
+	memset(&cpu, 0, sizeof(cpu));
 	cpu.current_ins.rs = 1;
 	cpu.current_ins.rt = 2;
 	cpu.current_ins.rd = 3;
@@ -54,6 +57,7 @@ void test_srl()
 {
 	printf("===test SRL===\n");
 	struct cpu_struct cpu;
+	memset(&cpu, 0, sizeof(cpu));
 	cpu.current_ins.rt = 1;
 	cpu.current_ins.rd = 2;
 	cpu.current_ins.shamt = 3;
@@ -70,6 +74,7 @@ void test_sra()
 {
 	printf("===test SRA===\n");
 	struct cpu_struct cpu;
+	memset(&cpu, 0, sizeof(cpu));
 	cpu.current_ins.rt = 1;
 	cpu.current_ins.rd = 2;
 	cpu.current_ins.shamt = 3;

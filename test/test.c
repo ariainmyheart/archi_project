@@ -26,7 +26,7 @@ int main()
 	test_sign_extend();
 	test_fetch();
 	test_decode();
-	test_slt();
+	printf("[test r_type.c]\n");
 	test_srl();
 	test_sra();
 	return 0;
