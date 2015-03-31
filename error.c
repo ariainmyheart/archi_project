@@ -4,7 +4,7 @@
 int check_num_overflow(int s, int c, int* status)
 {
 	if (s > 0 && c > 0 && s + c < 0) *status |= NUM_OVERFLOW;
-	if (s < 0 && c < 0 && s + c > 0) *status |= NUM_OVERFLOW;
+	if (s < 0 && c < 0 && s + c >= 0) *status |= NUM_OVERFLOW;
 	return s + c;
 }
 
