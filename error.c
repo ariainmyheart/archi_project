@@ -8,12 +8,14 @@ int check_num_overflow(int s, int c, int* status)
 	return s + c;
 }
 
-int check_addr_overflow(int addr, int* status)
+int check_addr_overflow(int addr, int byte, int* status)
 {
-	if (addr >= 1024 || addr < 0) {
-		*status |= ADDR_OVERFLOW;
-		return 1;
-	}
+	int i;
+	for (i = 0; i < byte; i++)
+		if (addr >= 1024 || addr < 0) {
+			*status |= ADDR_OVERFLOW;
+			return 1;
+		}
 	return 0;
 }
 

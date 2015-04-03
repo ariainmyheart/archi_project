@@ -9,7 +9,7 @@
 #define DATA_MISALIGNED 8
 
 int check_num_overflow(int s, int c, int* status);
-int check_addr_overflow(int addr, int* status);
+int check_addr_overflow(int addr, int byte, int* status);
 int check_data_misaligned(int addr, int byte, int* status);
 int error_dump(FILE* err, int cycle, int status);
 
