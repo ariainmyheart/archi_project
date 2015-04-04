@@ -19,15 +19,6 @@ char* word_to_binary(word_t ins, int start, int end)
 
 int main()
 {
-	printf("[test readfile.c]\n");
-	test_get_byte();
-	test_get_word();
-	printf("[test cpu.c]\n");
-	test_sign_extend();
-	test_fetch();
-	test_decode();
-	printf("[test r_type.c]\n");
-	test_srl();
-	test_sra();
+	test_num_overflow();
 	return 0;
 }

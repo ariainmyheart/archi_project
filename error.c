@@ -3,8 +3,11 @@
 
 int check_num_overflow(int s, int c, int* status)
 {
-	if (s > 0 && c > 0 && s + c < 0) *status |= NUM_OVERFLOW;
-	if (s < 0 && c < 0 && s + c >= 0) *status |= NUM_OVERFLOW;
+	int mask = 0x80000000;
+	int a = (s & mask) ? 1 : 0;
+	int b = (c & mask) ? 1 : 0;
+	int x = ((s+c) & mask) ? 1 : 0;
+	if (a == b && a != x) *status |= NUM_OVERFLOW;
 	return s + c;
 }
 
@@ -12,7 +15,7 @@ int check_addr_overflow(int addr, int byte, int* status)
 {
 	int i;
 	for (i = 0; i < byte; i++)
-		if (addr >= 1024 || addr < 0) {
+		if (addr+i >= 1024 || addr+i < 0) {
 			*status |= ADDR_OVERFLOW;
 			return 1;
 		}

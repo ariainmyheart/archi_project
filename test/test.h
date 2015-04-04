@@ -12,6 +12,7 @@ void test_add();
 void test_slt();
 void test_srl();
 void test_sra();
+void test_num_overflow();
 
 #endif
 
