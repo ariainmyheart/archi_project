@@ -6,15 +6,23 @@ void r_type_name(struct ins_struct* ins);
 void i_type_name(struct ins_struct* ins);
 void j_type_name(struct ins_struct* ins);
 
-void get_ins_name(struct ins_struct* ins)
+void get_ins_name(struct ins_struct* ins, int is_nop)
 {
+	if (is_nop) {
+		strcpy(ins->name, "NOP");
+		return;
+	}
 	switch (ins->op) {
 		case 0:
-			r_type_name(ins);
+			r_type_name(ins); break;
 		case 2:
+			strcpy(ins->name, "J"); break;
 		case 3:
+			strcpy(ins->name, "JAL"); break;
+		case HALT:
+			strcpy(ins->name, "HALT"); break;
 		default:
-			i_type_name(ins);
+			i_type_name(ins); break;
 	}
 }
 

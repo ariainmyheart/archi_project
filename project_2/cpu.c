@@ -15,6 +15,12 @@ struct cpu_struct* init_cpu()
 	memset(cpu, 0, sizeof(struct cpu_struct));
 	cpu->pc = init_byte_array(cpu->ins, 'i');
 	cpu->reg[29] = init_byte_array(cpu->mem, 'd');
+
+	int i;
+	for (i = 0; i < 5; i++) {
+		cpu->pipeline[i].is_nop = 1;
+		strcpy(cpu->pipeline[i].ins.name, "NOP");
+	}
 	return cpu;
 }
 
@@ -32,17 +38,21 @@ int is_halt(struct cpu_struct* cpu)
 
 void cpu_cycle(struct cpu_struct* cpu)
 {
-	int i;
 	write_back(cpu);
 	data_mem(cpu);
 	execute(cpu);
 	ins_decode(cpu);
 	ins_fetch(cpu);
+
+	DEBUG("----------------\n\n");
+}
+
+void cpu_next_cycle(struct cpu_struct* cpu)
+{
+	int i;
 	for (i = 4; i > 0; i--) {
 		cpu->pipeline[i] = cpu->pipeline[i-1];
 	}
-
-	DEBUG("----------------\n\n");
 }
 
 void ins_fetch(struct cpu_struct* cpu)
@@ -54,6 +64,7 @@ void ins_fetch(struct cpu_struct* cpu)
 		ins |= cpu->ins[i+cpu->pc];
 	}
 	cpu->pipeline[IF].ins.hex = ins;
+	cpu->pipeline[IF].is_nop = 0;
 	cpu->pc += 4;
 
 	DEBUG("IF\n");
@@ -84,7 +95,7 @@ void ins_decode(struct cpu_struct* cpu)
 	cpu->pipeline[ID].ins.immu = extract(ins, 15, 0);
 	cpu->pipeline[ID].ins.addr = extract(ins, 25, 0);
 
-	get_ins_name(&cpu->pipeline[ID].ins);
+	get_ins_name(&cpu->pipeline[ID].ins, cpu->pipeline[ID].is_nop);
 
 	cpu->pipeline[ID].data1 = get_data_1(cpu);
 	cpu->pipeline[ID].data2 = get_data_2(cpu);

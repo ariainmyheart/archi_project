@@ -31,6 +31,7 @@ struct pipe_struct {
 	int write_reg;
 	word_t write_data;
 	word_t read_data;
+	int is_nop;
 };
 
 struct cpu_struct {
@@ -49,12 +50,13 @@ struct cpu_struct* init_cpu();
 void free_cpu(struct cpu_struct* cpu);
 int is_halt(struct cpu_struct* cpu);
 void cpu_cycle(struct cpu_struct* cpu);
+void cpu_next_cycle(struct cpu_struct* cpu);
 void ins_fetch(struct cpu_struct* cpu);
 void ins_decode(struct cpu_struct* cpu);
 void execute(struct cpu_struct* cpu);
 void data_mem(struct cpu_struct* cpu);
 void write_back(struct cpu_struct* cpu);
-void get_ins_name(struct ins_struct* ins);
+void get_ins_name(struct ins_struct* ins, int is_nop);
 
 #endif
 
