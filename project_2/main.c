@@ -24,14 +24,25 @@ void EX_fwd_snapshot(struct data_info* data, FILE* snap)
 
 void pipeline_snapshot(struct cpu_struct* cpu, FILE* snap)
 {
-	fprintf(snap, "IF: 0x%08X\n", cpu->pipeline[IF].ins.hex);
-	fprintf(snap, "ID: %s\n", cpu->pipeline[ID].ins.name);
+	fprintf(snap, "IF: 0x%08X", cpu->pipeline[IF].ins.hex);
+	if (cpu->pipeline[ID].stall)
+		fprintf(snap, " to_be_stalled");
+	fprintf(snap, "\n");
+
+	fprintf(snap, "ID: %s", cpu->pipeline[ID].ins.name);
+	if (cpu->pipeline[ID].stall)
+		fprintf(snap, " to_be_stalled");
+	fprintf(snap, "\n");
+
 	fprintf(snap, "EX: %s", cpu->pipeline[EX].ins.name);
 	EX_fwd_snapshot(&cpu->pipeline[EX].data1, snap);
 	EX_fwd_snapshot(&cpu->pipeline[EX].data2, snap);
 	fprintf(snap, "\n");
+
 	fprintf(snap, "DM: %s\n", cpu->pipeline[DM].ins.name);
+
 	fprintf(snap, "WB: %s\n", cpu->pipeline[WB].ins.name);
+
 	fprintf(snap, "\n\n");
 }
 

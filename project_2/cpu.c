@@ -36,6 +36,13 @@ int is_halt(struct cpu_struct* cpu)
 	return 0;
 }
 
+void make_nop(struct pipe_struct* pipe)
+{
+	memset(pipe, 0, sizeof(struct pipe_struct));
+	pipe->is_nop = 1;
+	strcpy(pipe->ins.name, "NOP");
+}
+
 void cpu_cycle(struct cpu_struct* cpu)
 {
 	write_back(cpu);
@@ -51,6 +58,11 @@ void cpu_next_cycle(struct cpu_struct* cpu)
 {
 	int i;
 	for (i = 4; i > 0; i--) {
+		if (cpu->pipeline[i-1].stall) {
+			make_nop(&cpu->pipeline[i]);
+			cpu->pipeline[i-1].stall--;
+			break;
+		}
 		cpu->pipeline[i] = cpu->pipeline[i-1];
 	}
 }
@@ -101,6 +113,8 @@ void ins_decode(struct cpu_struct* cpu)
 	get_data_1(cpu);
 	get_data_2(cpu);
 	cpu->pipeline[ID].write_reg = get_write_reg(cpu);
+
+	check_stall(cpu);
 
 	// DEBUG("ID\n");
 	// DEBUG("\t0x%08x\n", cpu->pipeline[ID].ins.hex);

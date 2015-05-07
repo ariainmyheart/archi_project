@@ -117,15 +117,10 @@ int has_write_reg(struct ins_struct ins)
 
 word_t which_write_data(struct cpu_struct* cpu)
 {
-	switch (cpu->pipeline[WB].ins.op) {
-		case LW:
-		case LH:
-		case LHU:
-		case LB:
-		case LBU: /* load memory */
-			return cpu->pipeline[WB].read_data;
-		default: /* r_type i_type */
-			return cpu->pipeline[WB].alu_result;
+	if (is_load(cpu->pipeline[WB].ins)) {
+		return cpu->pipeline[WB].read_data;
+	} else {
+		return cpu->pipeline[WB].alu_result;
 	}
 }
 

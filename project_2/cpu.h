@@ -46,6 +46,7 @@ struct pipe_struct {
 	word_t write_data;
 	word_t read_data;
 	int is_nop;
+	int stall;
 };
 
 struct cpu_struct {
@@ -75,6 +76,7 @@ void get_ins_name(struct ins_struct* ins, int is_nop);
 void check_EX_DM_to_ID_fwd(struct cpu_struct* cpu);
 void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu);
 void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu);
+void check_stall(struct cpu_struct* cpu);
 
 #endif
 

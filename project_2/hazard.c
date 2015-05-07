@@ -39,8 +39,10 @@ void check_read_data_fwd(struct pipe_struct* pipe, struct data_info* data)
 
 void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu)
 {
-	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
-	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
+	if (!is_load(cpu->pipeline[DM].ins)) {
+		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
+		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
+	}
 }
 
 void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
@@ -51,6 +53,38 @@ void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
 	} else {
 		check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1, WB, EX);
 		check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2, WB, EX);
+	}
+}
+
+void check_branch_stall(struct cpu_struct* cpu)
+{
+}
+
+void check_normal_stall(struct cpu_struct* cpu)
+{
+	if (!is_load(cpu->pipeline[EX].ins))
+		return;
+	if (cpu->pipeline[EX].write_reg == 0)
+		return;
+	if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data1.from_reg)
+		cpu->pipeline[ID].stall = 1;
+	if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data2.from_reg)
+		cpu->pipeline[ID].stall = 1;
+}
+
+void check_stall(struct cpu_struct* cpu)
+{
+	if (cpu->pipeline[ID].is_nop)
+		return;
+
+	switch (cpu->pipeline[ID].ins.op) {
+		case BEQ:
+		case BNE:
+			check_branch_stall(cpu);
+			break;
+		default:
+			check_normal_stall(cpu);
+			break;
 	}
 }
 
