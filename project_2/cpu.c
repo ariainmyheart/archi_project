@@ -135,9 +135,12 @@ void ins_decode(struct cpu_struct* cpu)
 	cpu->pipeline[ID].write_reg = get_write_reg(cpu);
 
 	check_stall(cpu);
+	if (cpu->pipeline[ID].stall)
+		return;
+
 	check_EX_DM_to_ID_fwd(cpu);
 
-	if (is_branch(cpu->pipeline[ID].ins) && !cpu->pipeline[ID].stall) {
+	if (is_branch(cpu->pipeline[ID].ins)) {
 		struct data_info* data1 = &cpu->pipeline[ID].data1;
 		struct data_info* data2 = &cpu->pipeline[ID].data2;
 		if (cpu->pipeline[ID].ins.op == BEQ && data1->value == data2->value)
@@ -145,7 +148,7 @@ void ins_decode(struct cpu_struct* cpu)
 		if (cpu->pipeline[ID].ins.op == BNE && data1->value != data2->value)
 			cpu->pipeline[IF].flush = 1;
 	}
-	if (is_jump(cpu->pipeline[ID].ins) && !cpu->pipeline[ID].stall) {
+	if (is_jump(cpu->pipeline[ID].ins)) {
 		cpu->pipeline[IF].flush = 1;
 	}
 
