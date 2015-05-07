@@ -23,10 +23,24 @@ struct ins_struct {
 	char name[10];
 };
 
+struct fwd_info {
+	int has_fwd;
+	int from;
+	int to;
+};
+
+struct data_info {
+	word_t value;
+	int is_reg;
+	int from_reg;
+	char oprand;
+	struct fwd_info fwd;
+};
+
 struct pipe_struct {
 	struct ins_struct ins;
-	word_t data1;
-	word_t data2;
+	struct data_info data1;
+	struct data_info data2;
 	word_t alu_result;
 	int write_reg;
 	word_t write_data;
@@ -42,9 +56,9 @@ struct cpu_struct {
 	byte_t mem[1024];
 };
 
-/* static const char* stage_name[] = { */
-/* 	"IF", "ID", "EX", "DM", "WB" */
-/* }; */
+static const char* stage_name[] = {
+	"IF", "ID", "EX", "DM", "WB"
+};
 
 struct cpu_struct* init_cpu();
 void free_cpu(struct cpu_struct* cpu);
@@ -57,6 +71,10 @@ void execute(struct cpu_struct* cpu);
 void data_mem(struct cpu_struct* cpu);
 void write_back(struct cpu_struct* cpu);
 void get_ins_name(struct ins_struct* ins, int is_nop);
+
+void check_EX_DM_to_ID_fwd(struct cpu_struct* cpu);
+void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu);
+void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu);
 
 #endif
 

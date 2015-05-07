@@ -1,9 +1,12 @@
+#include <string.h>
 #include "cpu.h"
 #include "control.h"
 #include "instruction.h"
 
-word_t get_data_1(struct cpu_struct* cpu)
+void get_data_1(struct cpu_struct* cpu)
 {
+	struct data_info* data = &cpu->pipeline[ID].data1;
+
 	int rs = cpu->pipeline[ID].ins.rs;
 	int rt = cpu->pipeline[ID].ins.rt;
 	int imm = cpu->pipeline[ID].ins.imm;
@@ -13,23 +16,39 @@ word_t get_data_1(struct cpu_struct* cpu)
 				case SLL:
 				case SRL:
 				case SRA:
-					return cpu->reg[rt];
+					data->value = cpu->reg[rt];
+					data->is_reg = 1;
+					data->from_reg = rt;
+					data->oprand = 't';
+					break;
 				default:
-					return cpu->reg[rs];
+					data->value = cpu->reg[rs];
+					data->is_reg = 1;
+					data->from_reg = rs;
+					data->oprand = 's';
+					break;
 			}
 		case 2:
 		case 3: /* j_type */
-			return 0;
+			break;
 		case LUI:
-			return imm;
+			data->value = imm;
+			break;
 		default: /* i_type */
-			return cpu->reg[rs];
+			data->value = cpu->reg[rs];
+			data->is_reg = 1;
+			data->from_reg = rs;
+			data->oprand = 's';
+			break;
 
 	}
 }
 
-word_t get_data_2(struct cpu_struct* cpu)
+void get_data_2(struct cpu_struct* cpu)
 {
+	struct data_info data;
+	memset(&data, 0, sizeof(data));
+
 	int rt = cpu->pipeline[ID].ins.rt;
 	int shamt = cpu->pipeline[ID].ins.shamt;
 	int immu = cpu->pipeline[ID].ins.immu;
@@ -39,19 +58,26 @@ word_t get_data_2(struct cpu_struct* cpu)
 				case SLL:
 				case SRL:
 				case SRA:
-					return shamt;
+					data.value = shamt;
+					break;
 				default:
-					return cpu->reg[rt];
+					data.value = cpu->reg[rt];
+					data.is_reg = 1;
+					data.from_reg = rt;
+					data.oprand = 't';
+					break;
 			}
 		case 2:
 		case 3: /* j_type */
-			return 0;
+			break;
 		case LUI:
-			return 16;
+			data.value = 16;
+			break;
 		default: /* i_type */
-			return immu;
+			data.value = immu;
 
 	}
+	cpu->pipeline[ID].data2 = data;
 }
 
 int get_write_reg(struct cpu_struct* cpu)
@@ -79,10 +105,10 @@ int has_write_reg(struct ins_struct ins)
 			return 1;
 		case 2:
 		case 3: /* j_type */
-			return 0;
 		case SW:
 		case SH:
 		case SB: /* store memory */
+		case HALT:
 			return 0;
 		default: /* i_type */
 			return 1;
@@ -100,5 +126,19 @@ word_t which_write_data(struct cpu_struct* cpu)
 			return cpu->pipeline[WB].read_data;
 		default: /* r_type i_type */
 			return cpu->pipeline[WB].alu_result;
+	}
+}
+
+int is_load(struct ins_struct ins)
+{
+	switch (ins.op) {
+		case LW:
+		case LB:
+		case LBU:
+		case LH:
+		case LHU:
+			return 1;
+		default:
+			return 0;
 	}
 }

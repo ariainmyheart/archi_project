@@ -44,7 +44,7 @@ void cpu_cycle(struct cpu_struct* cpu)
 	ins_decode(cpu);
 	ins_fetch(cpu);
 
-	DEBUG("----------------\n\n");
+	// DEBUG("----------------\n\n");
 }
 
 void cpu_next_cycle(struct cpu_struct* cpu)
@@ -57,6 +57,7 @@ void cpu_next_cycle(struct cpu_struct* cpu)
 
 void ins_fetch(struct cpu_struct* cpu)
 {
+	memset(&cpu->pipeline[IF], 0, sizeof(struct pipe_struct));
 	word_t ins = 0;
 	int i;
 	for (i = 0; i < 4; i++) {
@@ -67,8 +68,8 @@ void ins_fetch(struct cpu_struct* cpu)
 	cpu->pipeline[IF].is_nop = 0;
 	cpu->pc += 4;
 
-	DEBUG("IF\n");
-	DEBUG("\t0x%08x\n", ins);
+	// DEBUG("IF\n");
+	// DEBUG("\t0x%08x\n", ins);
 }
 
 int sign_extend(int num, int len)
@@ -97,32 +98,40 @@ void ins_decode(struct cpu_struct* cpu)
 
 	get_ins_name(&cpu->pipeline[ID].ins, cpu->pipeline[ID].is_nop);
 
-	cpu->pipeline[ID].data1 = get_data_1(cpu);
-	cpu->pipeline[ID].data2 = get_data_2(cpu);
+	get_data_1(cpu);
+	get_data_2(cpu);
 	cpu->pipeline[ID].write_reg = get_write_reg(cpu);
 
-	DEBUG("ID\n");
-	DEBUG("\t0x%08x\n", cpu->pipeline[ID].ins.hex);
-	DEBUG("\tins: %s\n", cpu->pipeline[ID].ins.name);
-	DEBUG("\tdata1: 0x%08x\n", cpu->pipeline[ID].data1);
-	DEBUG("\tdata2: 0x%08x\n", cpu->pipeline[ID].data2);
-	DEBUG("\twrite_reg: %d\n", cpu->pipeline[ID].write_reg);
+	// DEBUG("ID\n");
+	// DEBUG("\t0x%08x\n", cpu->pipeline[ID].ins.hex);
+	// DEBUG("\tins: %s\n", cpu->pipeline[ID].ins.name);
+	// DEBUG("\tdata1: 0x%08x\n", cpu->pipeline[ID].data1.value);
+	// DEBUG("\tdata2: 0x%08x\n", cpu->pipeline[ID].data2.value);
+	// DEBUG("\twrite_reg: %d\n", cpu->pipeline[ID].write_reg);
 }
 
 void execute(struct cpu_struct* cpu)
 {
+	if (cpu->pipeline[EX].is_nop)
+		return ;
+
+	check_DM_WB_to_EX_fwd(cpu);
+	check_EX_DM_to_EX_fwd(cpu);
 	alu_calculate(cpu);
 
-	DEBUG("EX\n");
-	DEBUG("\t0x%08x\n", cpu->pipeline[EX].ins.hex);
-	DEBUG("\tins: %s\n", cpu->pipeline[EX].ins.name);
-	DEBUG("\tdata1: 0x%08x\n", cpu->pipeline[EX].data1);
-	DEBUG("\tdata2: 0x%08x\n", cpu->pipeline[EX].data2);
-	DEBUG("\talu_result: 0x%08x\n", cpu->pipeline[EX].alu_result);
+	/* DEBUG("EX\n"); */
+	/* DEBUG("\tins: %s\n", cpu->pipeline[EX].ins.name); */
+	/* DEBUG("\tdata1: 0x%08x\n", cpu->pipeline[EX].data1.value); */
+	/* DEBUG("\tdata1_fwd: %d\n", cpu->pipeline[EX].data1.fwd.has_fwd); */
+	/* DEBUG("\tdata2: 0x%08x\n", cpu->pipeline[EX].data2.value); */
+	/* DEBUG("\tdata2_fwd: %d\n", cpu->pipeline[EX].data2.fwd.has_fwd); */
 }
 
 void data_mem(struct cpu_struct* cpu)
 {
+	if (cpu->pipeline[DM].is_nop)
+		return;
+
 	word_t* read_data = &cpu->pipeline[DM].read_data;
 	word_t write_data = cpu->pipeline[DM].write_data;
 	word_t addr = cpu->pipeline[DM].alu_result;
@@ -156,17 +165,19 @@ void data_mem(struct cpu_struct* cpu)
 			 break;
 	}
 
-	DEBUG("DM\n");
-	DEBUG("\t0x%08x\n", cpu->pipeline[DM].ins.hex);
-	DEBUG("\tins: %s\n", cpu->pipeline[DM].ins.name);
-	DEBUG("\taddr: 0x%08x\n", addr);
-	DEBUG("\tread_data: 0x%08x\n", *read_data);
-	DEBUG("\twrite_data: 0x%08x\n", write_data);
+	// DEBUG("DM\n");
+	// DEBUG("\t0x%08x\n", cpu->pipeline[DM].ins.hex);
+	// DEBUG("\tins: %s\n", cpu->pipeline[DM].ins.name);
+	// DEBUG("\taddr: 0x%08x\n", addr);
+	// DEBUG("\tread_data: 0x%08x\n", *read_data);
+	// DEBUG("\twrite_data: 0x%08x\n", write_data);
 
 }
 
 void write_back(struct cpu_struct* cpu)
 {
+	if (cpu->pipeline[WB].is_nop)
+		return;
 
 	word_t write_data = which_write_data(cpu);
 	int write_reg = cpu->pipeline[WB].write_reg;
@@ -174,11 +185,11 @@ void write_back(struct cpu_struct* cpu)
 	if (has_write_reg(cpu->pipeline[WB].ins))
 		cpu->reg[write_reg] = write_data;
 
-	DEBUG("WB\n");
-	DEBUG("\t0x%08x\n", cpu->pipeline[WB].ins.hex);
-	DEBUG("\tins: %s\n", cpu->pipeline[WB].ins.name);
-	DEBUG("\thas_write_reg: %d\n", has_write_reg(cpu->pipeline[WB].ins));
-	DEBUG("\twrite_data: %d\n", write_data);
-	DEBUG("\twrite_reg: %d\n", write_reg);
+	// DEBUG("WB\n");
+	// DEBUG("\t0x%08x\n", cpu->pipeline[WB].ins.hex);
+	// DEBUG("\tins: %s\n", cpu->pipeline[WB].ins.name);
+	// DEBUG("\thas_write_reg: %d\n", has_write_reg(cpu->pipeline[WB].ins));
+	// DEBUG("\twrite_data: %d\n", write_data);
+	// DEBUG("\twrite_reg: %d\n", write_reg);
 }
 

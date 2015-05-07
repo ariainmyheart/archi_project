@@ -21,8 +21,8 @@ void alu_calculate(struct cpu_struct* cpu)
 
 void r_type(struct cpu_struct* cpu)
 {
-	word_t data1 = cpu->pipeline[EX].data1;
-	word_t data2 = cpu->pipeline[EX].data2;
+	word_t data1 = cpu->pipeline[EX].data1.value;
+	word_t data2 = cpu->pipeline[EX].data2.value;
 	word_t* result = &cpu->pipeline[EX].alu_result;
 	switch (cpu->pipeline[EX].ins.funct) {
 		case ADD:
@@ -63,8 +63,8 @@ void r_type(struct cpu_struct* cpu)
 
 void i_type(struct cpu_struct* cpu)
 {
-	word_t data1 = cpu->pipeline[EX].data1;
-	word_t data2 = cpu->pipeline[EX].data2;
+	word_t data1 = cpu->pipeline[EX].data1.value;
+	word_t data2 = cpu->pipeline[EX].data2.value;
 	word_t* result = &cpu->pipeline[EX].alu_result;
 	switch (cpu->pipeline[EX].ins.op) {
 		case ADDI:
