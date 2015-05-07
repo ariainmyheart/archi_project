@@ -60,6 +60,9 @@ void get_data_2(struct cpu_struct* cpu)
 				case SRA:
 					data.value = shamt;
 					break;
+				case JR:
+					data.is_reg = 0;
+					break;
 				default:
 					data.value = cpu->reg[rt];
 					data.is_reg = 1;
@@ -158,6 +161,8 @@ int is_branch(struct ins_struct ins)
 
 int is_jump(struct ins_struct ins)
 {
+	if (ins.op == 0 && ins.funct == JR)
+		return 1;
 	if (ins.op == J)
 		return 1;
 	if (ins.op == JAL)

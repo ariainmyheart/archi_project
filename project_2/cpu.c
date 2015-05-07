@@ -92,8 +92,12 @@ void ins_fetch(struct cpu_struct* cpu)
 	if (cpu->pipeline[IF].flush) {
 		if (is_branch(cpu->pipeline[ID].ins))
 			cpu->pc +=  cpu->pipeline[ID].ins.imm * 4 - 4;
-		else if (is_jump(cpu->pipeline[ID].ins))
-			cpu->pc +=  cpu->pipeline[ID].ins.imm * 4 - 4;
+		else if (is_jump(cpu->pipeline[ID].ins)) {
+			if (cpu->pipeline[ID].ins.op == 0 && cpu->pipeline[ID].ins.funct == JR)
+				cpu->pc = cpu->pipeline[ID].data1.value;
+			else
+				cpu->pc = ((cpu->pc-4)&0xf0000000) | (cpu->pipeline[ID].ins.immu*4);
+		}
 	}
 
 	// DEBUG("IF\n");
@@ -140,6 +144,9 @@ void ins_decode(struct cpu_struct* cpu)
 			cpu->pipeline[IF].flush = 1;
 		if (cpu->pipeline[ID].ins.op == BNE && data1->value != data2->value)
 			cpu->pipeline[IF].flush = 1;
+	}
+	if (is_jump(cpu->pipeline[ID].ins) && !cpu->pipeline[ID].stall) {
+		cpu->pipeline[IF].flush = 1;
 	}
 
 	// DEBUG("ID\n");

@@ -36,13 +36,11 @@ void check_read_data_fwd(struct pipe_struct* pipe, struct data_info* data)
 
 void check_EX_DM_to_ID_fwd(struct cpu_struct* cpu)
 {
-	if (!is_branch(cpu->pipeline[ID].ins))
+	if (!is_branch(cpu->pipeline[ID].ins) && !is_jump(cpu->pipeline[ID].ins))
 		return;
 	if (!has_write_reg(cpu->pipeline[EX].ins))
 		return;
 	if (is_load(cpu->pipeline[EX].ins))
-		return;
-	if (cpu->pipeline[EX].is_nop)
 		return;
 	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[ID].data1, DM, ID);
 	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[ID].data2, DM, ID);
@@ -54,6 +52,8 @@ void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu)
 		return;
 	if (is_branch(cpu->pipeline[EX].ins))
 		return;
+	if (is_jump(cpu->pipeline[EX].ins))
+		return;
 	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
 	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
 }
@@ -61,6 +61,8 @@ void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu)
 void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
 {
 	if (is_branch(cpu->pipeline[EX].ins))
+		return;
+	if (is_jump(cpu->pipeline[EX].ins))
 		return;
 	if (is_load(cpu->pipeline[WB].ins)) {
 		check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1);
@@ -106,6 +108,11 @@ void check_stall(struct cpu_struct* cpu)
 {
 	if (cpu->pipeline[ID].is_nop)
 		return;
+
+	if (cpu->pipeline[ID].ins.op == 0 && cpu->pipeline[ID].ins.funct == JR) {
+		check_branch_stall(cpu);
+		return;
+	}
 
 	switch (cpu->pipeline[ID].ins.op) {
 		case BEQ:
