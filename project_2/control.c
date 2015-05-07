@@ -73,6 +73,13 @@ void get_data_2(struct cpu_struct* cpu)
 		case LUI:
 			data.value = 16;
 			break;
+		case BEQ:
+		case BNE:
+			data.value = cpu->reg[rt];
+			data.is_reg = 1;
+			data.from_reg = rt;
+			data.oprand = 't';
+			break;
 		default: /* i_type */
 			data.value = immu;
 
@@ -87,9 +94,10 @@ int get_write_reg(struct cpu_struct* cpu)
 	switch (cpu->pipeline[ID].ins.op) {
 		case 0: /* r_type */
 			return rd;
-		case 2:
-		case 3: /* j_type */
+		case J:
 			return 0;
+		case JAL:
+			return 31;
 		default: /* i_type */
 			return rt;
 
@@ -103,11 +111,12 @@ int has_write_reg(struct ins_struct ins)
 			if (ins.funct == JR)
 				return 0;
 			return 1;
-		case 2:
-		case 3: /* j_type */
+		case J:
 		case SW:
 		case SH:
 		case SB: /* store memory */
+		case BEQ:
+		case BNE: /* branch */
 		case HALT:
 			return 0;
 		default: /* i_type */
@@ -137,3 +146,22 @@ int is_load(struct ins_struct ins)
 			return 0;
 	}
 }
+
+int is_branch(struct ins_struct ins)
+{
+	if (ins.op == BEQ)
+		return 1;
+	if (ins.op == BNE)
+		return 1;
+	return 0;
+}
+
+int is_jump(struct ins_struct ins)
+{
+	if (ins.op == J)
+		return 1;
+	if (ins.op == JAL)
+		return 1;
+	return 0;
+}
+

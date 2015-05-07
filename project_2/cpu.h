@@ -46,12 +46,14 @@ struct pipe_struct {
 	word_t write_data;
 	word_t read_data;
 	int is_nop;
+	int flush;
 	int stall;
 };
 
 struct cpu_struct {
 	struct pipe_struct pipeline[5];
 	word_t pc;
+	word_t last_pc;
 	word_t reg[32];
 	byte_t ins[1024];
 	byte_t mem[1024];

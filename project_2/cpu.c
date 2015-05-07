@@ -61,15 +61,23 @@ void cpu_next_cycle(struct cpu_struct* cpu)
 		if (cpu->pipeline[i-1].stall) {
 			make_nop(&cpu->pipeline[i]);
 			cpu->pipeline[i-1].stall--;
+			cpu->pc = cpu->last_pc;
 			break;
 		}
 		cpu->pipeline[i] = cpu->pipeline[i-1];
+	}
+	if (cpu->pipeline[IF].flush) {
+		make_nop(&cpu->pipeline[ID]);
+		cpu->pipeline[IF].flush--;
 	}
 }
 
 void ins_fetch(struct cpu_struct* cpu)
 {
+	int flush = cpu->pipeline[IF].flush;
 	memset(&cpu->pipeline[IF], 0, sizeof(struct pipe_struct));
+	cpu->pipeline[IF].flush = flush;
+
 	word_t ins = 0;
 	int i;
 	for (i = 0; i < 4; i++) {
@@ -78,7 +86,15 @@ void ins_fetch(struct cpu_struct* cpu)
 	}
 	cpu->pipeline[IF].ins.hex = ins;
 	cpu->pipeline[IF].is_nop = 0;
+	cpu->last_pc = cpu->pc;
 	cpu->pc += 4;
+
+	if (cpu->pipeline[IF].flush) {
+		if (is_branch(cpu->pipeline[ID].ins))
+			cpu->pc +=  cpu->pipeline[ID].ins.imm * 4 - 4;
+		else if (is_jump(cpu->pipeline[ID].ins))
+			cpu->pc +=  cpu->pipeline[ID].ins.imm * 4 - 4;
+	}
 
 	// DEBUG("IF\n");
 	// DEBUG("\t0x%08x\n", ins);
@@ -115,6 +131,16 @@ void ins_decode(struct cpu_struct* cpu)
 	cpu->pipeline[ID].write_reg = get_write_reg(cpu);
 
 	check_stall(cpu);
+	check_EX_DM_to_ID_fwd(cpu);
+
+	if (is_branch(cpu->pipeline[ID].ins) && !cpu->pipeline[ID].stall) {
+		struct data_info* data1 = &cpu->pipeline[ID].data1;
+		struct data_info* data2 = &cpu->pipeline[ID].data2;
+		if (cpu->pipeline[ID].ins.op == BEQ && data1->value == data2->value)
+			cpu->pipeline[IF].flush = 1;
+		if (cpu->pipeline[ID].ins.op == BNE && data1->value != data2->value)
+			cpu->pipeline[IF].flush = 1;
+	}
 
 	// DEBUG("ID\n");
 	// DEBUG("\t0x%08x\n", cpu->pipeline[ID].ins.hex);
