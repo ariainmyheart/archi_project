@@ -9,7 +9,7 @@
 #define OR 0x25
 #define XOR 0x26
 #define NOR 0x27
-#define NADD 0x28
+#define NAND 0x28
 #define SLT 0x2A
 #define SLL 0x00
 #define SRL 0x02

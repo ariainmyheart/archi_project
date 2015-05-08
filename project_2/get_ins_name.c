@@ -35,7 +35,7 @@ void r_type_name(struct ins_struct* ins)
 		case OR: strcpy(ins->name, "OR"); break;
 		case XOR: strcpy(ins->name, "XOR"); break;
 		case NOR: strcpy(ins->name, "NOR"); break;
-		case NADD: strcpy(ins->name, "NADD"); break;
+		case NAND: strcpy(ins->name, "NAND"); break;
 		case SLT: strcpy(ins->name, "SLT"); break;
 		case SLL: strcpy(ins->name, "SLL"); break;
 		case SRL: strcpy(ins->name, "SRL"); break;

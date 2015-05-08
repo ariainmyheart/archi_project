@@ -45,7 +45,7 @@ int r_type(struct cpu_struct* cpu)
 		case NOR:
 			*result = ~(data1 | data2);
 			break;
-		case NADD:
+		case NAND:
 			*result = ~(data1 & data2);
 			break;
 		case SLT:
