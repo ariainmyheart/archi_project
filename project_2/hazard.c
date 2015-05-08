@@ -86,15 +86,33 @@ void check_branch_stall(struct cpu_struct* cpu)
 	if (cpu->pipeline[EX].write_reg == 0)
 		return;
 	if (is_load(cpu->pipeline[EX].ins)) {
-		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data1.from_reg)
+		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data1.from_reg) {
 			cpu->pipeline[ID].stall = 2;
-		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data2.from_reg)
+			return;
+		}
+		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data2.from_reg) {
 			cpu->pipeline[ID].stall = 2;
+			return;
+		}
 	} else {
-		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data1.from_reg)
+		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data1.from_reg) {
 			cpu->pipeline[ID].stall = 1;
-		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data2.from_reg)
+			return;
+		}
+		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data2.from_reg) {
 			cpu->pipeline[ID].stall = 1;
+			return;
+		}
+	}
+	if (is_load(cpu->pipeline[DM].ins)) {
+		if (cpu->pipeline[DM].write_reg == cpu->pipeline[ID].data1.from_reg) {
+			cpu->pipeline[ID].stall = 1;
+			return;
+		}
+		if (cpu->pipeline[DM].write_reg == cpu->pipeline[ID].data2.from_reg) {
+			cpu->pipeline[ID].stall = 1;
+			return;
+		}
 	}
 }
 
