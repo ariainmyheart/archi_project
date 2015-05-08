@@ -38,9 +38,9 @@ void check_EX_DM_to_ID_fwd(struct cpu_struct* cpu)
 {
 	if (!is_branch(cpu->pipeline[ID].ins) && !is_jump(cpu->pipeline[ID].ins))
 		return;
-	if (!has_write_reg(cpu->pipeline[EX].ins))
+	if (!has_write_reg(cpu->pipeline[DM].ins))
 		return;
-	if (is_load(cpu->pipeline[EX].ins))
+	if (is_load(cpu->pipeline[DM].ins))
 		return;
 	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[ID].data1, DM, ID);
 	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[ID].data2, DM, ID);
