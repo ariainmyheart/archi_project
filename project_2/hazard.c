@@ -54,12 +54,10 @@ void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu)
 		return;
 	if (is_jump(cpu->pipeline[EX].ins))
 		return;
-	if (is_save(cpu->pipeline[EX].ins)) {
+	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
+	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
+	if (is_save(cpu->pipeline[EX].ins))
 		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].write_data, DM, EX);
-	} else {
-		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
-		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
-	}
 }
 
 void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
@@ -69,19 +67,15 @@ void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
 	if (is_jump(cpu->pipeline[EX].ins))
 		return;
 	if (is_load(cpu->pipeline[WB].ins)) {
-		if (is_save(cpu->pipeline[EX].ins)) {
+		if (is_save(cpu->pipeline[EX].ins))
 			check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].write_data);
-		} else {
-			check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1);
-			check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2);
-		}
+		check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1);
+		check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2);
 	} else {
-		if (is_save(cpu->pipeline[EX].ins)) {
+		if (is_save(cpu->pipeline[EX].ins))
 			check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].write_data, WB, EX);
-		} else {
-			check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1, WB, EX);
-			check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2, WB, EX);
-		}
+		check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1, WB, EX);
+		check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2, WB, EX);
 	}
 }
 
