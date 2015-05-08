@@ -72,9 +72,11 @@ int main()
 		cpu_next_cycle(cpu);
 		flag = error_dump(err, cycle, status);
 	}
-	register_snapshot(cpu, cycle, snap);
-	ins_decode(cpu);
-	pipeline_snapshot(cpu, snap);
+	if (!flag) {
+		register_snapshot(cpu, cycle, snap);
+		ins_decode(cpu);
+		pipeline_snapshot(cpu, snap);
+	}
 	free_cpu(cpu);
 	fclose(snap);
 	fclose(err);
