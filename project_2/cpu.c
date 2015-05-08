@@ -89,6 +89,8 @@ void ins_fetch(struct cpu_struct* cpu)
 	cpu->last_pc = cpu->pc;
 	cpu->pc += 4;
 
+	cpu->pipeline[IF].ins.pc = cpu->pc;
+
 	if (cpu->pipeline[IF].flush) {
 		if (is_branch(cpu->pipeline[ID].ins))
 			cpu->pc +=  cpu->pipeline[ID].ins.imm * 4 - 4;
@@ -118,6 +120,7 @@ int extract(word_t ins, int left, int right)
 void ins_decode(struct cpu_struct* cpu)
 {
 	word_t ins = cpu->pipeline[ID].ins.hex;
+
 	cpu->pipeline[ID].ins.op = extract(ins, 31, 26);
 	cpu->pipeline[ID].ins.rs = extract(ins, 25, 21);
 	cpu->pipeline[ID].ins.rt = extract(ins, 20, 16);
@@ -130,8 +133,14 @@ void ins_decode(struct cpu_struct* cpu)
 
 	get_ins_name(&cpu->pipeline[ID].ins, cpu->pipeline[ID].is_nop);
 
+	if (is_sll_0_0_0(cpu->pipeline[ID].ins)) {
+		make_nop(&cpu->pipeline[ID]);
+		return;
+	}
+
 	get_data_1(cpu);
 	get_data_2(cpu);
+	get_write_data(cpu);
 	cpu->pipeline[ID].write_reg = get_write_reg(cpu);
 
 	check_stall(cpu);
@@ -183,7 +192,7 @@ void data_mem(struct cpu_struct* cpu)
 		return;
 
 	word_t* read_data = &cpu->pipeline[DM].read_data;
-	word_t write_data = cpu->pipeline[DM].write_data;
+	word_t write_data = cpu->pipeline[DM].write_data.value;
 	word_t addr = cpu->pipeline[DM].alu_result;
 
 	switch (cpu->pipeline[DM].ins.op) {

@@ -6,6 +6,7 @@
 void get_data_1(struct cpu_struct* cpu)
 {
 	struct data_info* data = &cpu->pipeline[ID].data1;
+	memset(data, 0, sizeof(struct data_info));
 
 	int rs = cpu->pipeline[ID].ins.rs;
 	int rt = cpu->pipeline[ID].ins.rt;
@@ -28,8 +29,8 @@ void get_data_1(struct cpu_struct* cpu)
 					data->oprand = 's';
 					break;
 			}
-		case 2:
-		case 3: /* j_type */
+		case J:
+		case JAL: /* j_type */
 			break;
 		case LUI:
 			data->value = imm;
@@ -51,6 +52,7 @@ void get_data_2(struct cpu_struct* cpu)
 
 	int rt = cpu->pipeline[ID].ins.rt;
 	int shamt = cpu->pipeline[ID].ins.shamt;
+	int imm = cpu->pipeline[ID].ins.imm;
 	int immu = cpu->pipeline[ID].ins.immu;
 	switch (cpu->pipeline[ID].ins.op) {
 		case 0: /* r_type */
@@ -70,8 +72,9 @@ void get_data_2(struct cpu_struct* cpu)
 					data.oprand = 't';
 					break;
 			}
-		case 2:
-		case 3: /* j_type */
+			break;
+		case J:
+		case JAL: /* j_type */
 			break;
 		case LUI:
 			data.value = 16;
@@ -83,11 +86,36 @@ void get_data_2(struct cpu_struct* cpu)
 			data.from_reg = rt;
 			data.oprand = 't';
 			break;
-		default: /* i_type */
+		case ADDI:
+		case LW:
+		case LH:
+		case LHU:
+		case LB:
+		case LBU:
+		case SW:
+		case SH:
+		case SB:
+		case SLTI:
+			data.value = imm;
+			break;
+		default:
 			data.value = immu;
-
+			break;
 	}
 	cpu->pipeline[ID].data2 = data;
+}
+
+void get_write_data(struct cpu_struct* cpu)
+{
+	if (is_save(cpu->pipeline[ID].ins)) {
+		struct data_info* data = &cpu->pipeline[ID].write_data;
+		int rt = cpu->pipeline[ID].ins.rt;
+		memset(data, 0, sizeof(struct data_info));
+		data->value = cpu->reg[rt];
+		data->is_reg = 1;
+		data->from_reg = rt;
+		data->oprand = 't';
+	}
 }
 
 int get_write_reg(struct cpu_struct* cpu)
@@ -150,6 +178,19 @@ int is_load(struct ins_struct ins)
 	}
 }
 
+int is_save(struct ins_struct ins)
+{
+	switch (ins.op) {
+		case SW:
+		case SB:
+		case SH:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+
 int is_branch(struct ins_struct ins)
 {
 	if (ins.op == BEQ)
@@ -166,6 +207,13 @@ int is_jump(struct ins_struct ins)
 	if (ins.op == J)
 		return 1;
 	if (ins.op == JAL)
+		return 1;
+	return 0;
+}
+
+int is_sll_0_0_0(struct ins_struct ins)
+{
+	if (ins.op == 0 && ins.rt == 0 && ins.rd == 0 && ins.shamt == 0 && ins.funct == 0)
 		return 1;
 	return 0;
 }

@@ -10,8 +10,10 @@ int get_write_reg(struct cpu_struct* cpu);
 int has_write_reg(struct ins_struct ins);
 word_t which_write_data(struct cpu_struct* cpu);
 int is_load(struct ins_struct ins);
+int is_save(struct ins_struct ins);
 int is_branch(struct ins_struct ins);
 int is_jump(struct ins_struct ins);
+int is_sll_0_0_0(struct ins_struct ins);
 
 #endif 
 

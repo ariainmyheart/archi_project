@@ -54,8 +54,12 @@ void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu)
 		return;
 	if (is_jump(cpu->pipeline[EX].ins))
 		return;
-	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
-	check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
+	if (is_save(cpu->pipeline[EX].ins)) {
+		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].write_data, DM, EX);
+	} else {
+		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data1, DM, EX);
+		check_alu_result_fwd(&cpu->pipeline[DM], &cpu->pipeline[EX].data2, DM, EX);
+	}
 }
 
 void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
@@ -65,11 +69,19 @@ void check_DM_WB_to_EX_fwd(struct cpu_struct* cpu)
 	if (is_jump(cpu->pipeline[EX].ins))
 		return;
 	if (is_load(cpu->pipeline[WB].ins)) {
-		check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1);
-		check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2);
+		if (is_save(cpu->pipeline[EX].ins)) {
+			check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].write_data);
+		} else {
+			check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1);
+			check_read_data_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2);
+		}
 	} else {
-		check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1, WB, EX);
-		check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2, WB, EX);
+		if (is_save(cpu->pipeline[EX].ins)) {
+			check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].write_data, WB, EX);
+		} else {
+			check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data1, WB, EX);
+			check_alu_result_fwd(&cpu->pipeline[WB], &cpu->pipeline[EX].data2, WB, EX);
+		}
 	}
 }
 
@@ -90,6 +102,16 @@ void check_branch_stall(struct cpu_struct* cpu)
 		if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].data2.from_reg)
 			cpu->pipeline[ID].stall = 1;
 	}
+}
+
+void check_write_data_stall(struct cpu_struct* cpu)
+{
+	if (!is_load(cpu->pipeline[EX].ins))
+		return;
+	if (cpu->pipeline[EX].write_reg == 0)
+		return;
+	if (cpu->pipeline[EX].write_reg == cpu->pipeline[ID].ins.rt)
+		cpu->pipeline[ID].stall = 1;
 }
 
 void check_normal_stall(struct cpu_struct* cpu)
@@ -118,6 +140,11 @@ void check_stall(struct cpu_struct* cpu)
 		case BEQ:
 		case BNE:
 			check_branch_stall(cpu);
+			break;
+		case SW:
+		case SH:
+		case SB:
+			check_write_data_stall(cpu);
 			break;
 		default:
 			check_normal_stall(cpu);

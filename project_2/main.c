@@ -42,6 +42,7 @@ void pipeline_snapshot(struct cpu_struct* cpu, FILE* snap)
 	fprintf(snap, "EX: %s", cpu->pipeline[EX].ins.name);
 	fwd_snapshot(&cpu->pipeline[EX].data1, EX, snap);
 	fwd_snapshot(&cpu->pipeline[EX].data2, EX, snap);
+	fwd_snapshot(&cpu->pipeline[EX].write_data, EX, snap);
 	fprintf(snap, "\n");
 
 	fprintf(snap, "DM: %s\n", cpu->pipeline[DM].ins.name);

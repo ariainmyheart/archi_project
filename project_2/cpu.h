@@ -21,6 +21,7 @@ struct ins_struct {
 	int immu;
 	int addr;
 	char name[10];
+	word_t pc;
 };
 
 struct fwd_info {
@@ -41,9 +42,9 @@ struct pipe_struct {
 	struct ins_struct ins;
 	struct data_info data1;
 	struct data_info data2;
+	struct data_info write_data;
 	word_t alu_result;
 	int write_reg;
-	word_t write_data;
 	word_t read_data;
 	int is_nop;
 	int flush;

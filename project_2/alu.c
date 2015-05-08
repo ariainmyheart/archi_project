@@ -9,9 +9,8 @@ void alu_calculate(struct cpu_struct* cpu)
 		case 0:
 			r_type(cpu);
 			break;
-		case 2:
-		case 3:
-			/* j_type(cpu); */
+		case JAL:
+			cpu->pipeline[EX].alu_result = cpu->pipeline[EX].ins.pc;
 			break;
 		default:
 			i_type(cpu);
