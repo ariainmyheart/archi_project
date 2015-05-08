@@ -4,3 +4,4 @@
 *.exe
 a.out
 single_cycle
+pipeline
