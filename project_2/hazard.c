@@ -48,7 +48,7 @@ void check_EX_DM_to_ID_fwd(struct cpu_struct* cpu)
 
 void check_EX_DM_to_EX_fwd(struct cpu_struct* cpu)
 {
-	if (is_load(cpu->pipeline[EX].ins))
+	if (is_load(cpu->pipeline[DM].ins))
 		return;
 	if (is_branch(cpu->pipeline[EX].ins))
 		return;
