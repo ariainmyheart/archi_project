@@ -2,33 +2,36 @@
 #include "cpu.h"
 #include "instruction.h"
 #include "type.h"
+#include "error.h"
 
-void alu_calculate(struct cpu_struct* cpu)
+int alu_calculate(struct cpu_struct* cpu)
 {
 	switch (cpu->pipeline[EX].ins.op) {
 		case 0:
-			r_type(cpu);
-			break;
+			return r_type(cpu);
 		case JAL:
 			cpu->pipeline[EX].alu_result = cpu->pipeline[EX].ins.pc;
-			break;
+			return 0;
 		default:
-			i_type(cpu);
-			break;
+			return i_type(cpu);
 	}
 }
 
-void r_type(struct cpu_struct* cpu)
+int r_type(struct cpu_struct* cpu)
 {
+	int status = 0;
+
 	word_t data1 = cpu->pipeline[EX].data1.value;
 	word_t data2 = cpu->pipeline[EX].data2.value;
 	word_t* result = &cpu->pipeline[EX].alu_result;
 	switch (cpu->pipeline[EX].ins.funct) {
 		case ADD:
-			*result = data1 + data2;
+			*result = check_num_overflow(data1, data2, &status);
+			/* *result = data1 + data2; */
 			break;
 		case SUB:
-			*result = data1 - data2;
+			*result = check_num_overflow(data1, -data2, &status);
+			/* *result = data1 - data2; */
 			break;
 		case AND:
 			*result = data1 & data2;
@@ -58,10 +61,13 @@ void r_type(struct cpu_struct* cpu)
 			*result = (int)data1 >> data2;
 			break;
 	}
+	return status;
 }
 
-void i_type(struct cpu_struct* cpu)
+int i_type(struct cpu_struct* cpu)
 {
+	int status = 0;
+
 	word_t data1 = cpu->pipeline[EX].data1.value;
 	word_t data2 = cpu->pipeline[EX].data2.value;
 	word_t* result = &cpu->pipeline[EX].alu_result;
@@ -75,7 +81,8 @@ void i_type(struct cpu_struct* cpu)
 		case SW:
 		case SH:
 		case SB: /* addi, load, store */
-			*result = data1 + data2;
+			/* *result = data1 + data2; */
+			*result = check_num_overflow(data1, data2, &status);
 			break;
 		case LUI:
 			*result = data1 << data2;
@@ -92,5 +99,6 @@ void i_type(struct cpu_struct* cpu)
 		case SLTI:
 			*result =  (int)data1 < (int)data2;
 	}
+	return status;
 }
 

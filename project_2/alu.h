@@ -4,10 +4,10 @@
 #include "type.h"
 #include "cpu.h"
 
-void alu_calculate(struct cpu_struct* cpu);
-void r_type(struct cpu_struct* cpu);
-void i_type(struct cpu_struct* cpu);
-void j_type(struct cpu_struct* cpu);
+int alu_calculate(struct cpu_struct* cpu);
+int r_type(struct cpu_struct* cpu);
+int i_type(struct cpu_struct* cpu);
+int j_type(struct cpu_struct* cpu);
 
 #endif
 

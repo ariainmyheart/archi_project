@@ -60,20 +60,16 @@ struct cpu_struct {
 	byte_t mem[1024];
 };
 
-static const char* stage_name[] = {
-	"IF", "ID", "EX", "DM", "WB"
-};
-
 struct cpu_struct* init_cpu();
 void free_cpu(struct cpu_struct* cpu);
 int is_halt(struct cpu_struct* cpu);
-void cpu_cycle(struct cpu_struct* cpu);
+int cpu_cycle(struct cpu_struct* cpu);
 void cpu_next_cycle(struct cpu_struct* cpu);
 void ins_fetch(struct cpu_struct* cpu);
 void ins_decode(struct cpu_struct* cpu);
-void execute(struct cpu_struct* cpu);
-void data_mem(struct cpu_struct* cpu);
-void write_back(struct cpu_struct* cpu);
+void execute(struct cpu_struct* cpu, int* status);
+void data_mem(struct cpu_struct* cpu, int* status);
+void write_back(struct cpu_struct* cpu, int* status);
 void get_ins_name(struct ins_struct* ins, int is_nop);
 
 void check_EX_DM_to_ID_fwd(struct cpu_struct* cpu);

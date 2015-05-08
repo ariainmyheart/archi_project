@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "control.h"
 #include "debug.h"
+#include "error.h"
 
 struct cpu_struct* init_cpu()
 {
@@ -43,13 +44,17 @@ void make_nop(struct pipe_struct* pipe)
 	strcpy(pipe->ins.name, "NOP");
 }
 
-void cpu_cycle(struct cpu_struct* cpu)
+int cpu_cycle(struct cpu_struct* cpu)
 {
-	write_back(cpu);
-	data_mem(cpu);
-	execute(cpu);
+	int status = 0;
+
+	write_back(cpu, &status);
+	data_mem(cpu, &status);
+	execute(cpu, &status);
 	ins_decode(cpu);
 	ins_fetch(cpu);
+
+	return status;
 
 	// DEBUG("----------------\n\n");
 }
@@ -169,14 +174,14 @@ void ins_decode(struct cpu_struct* cpu)
 	// DEBUG("\twrite_reg: %d\n", cpu->pipeline[ID].write_reg);
 }
 
-void execute(struct cpu_struct* cpu)
+void execute(struct cpu_struct* cpu, int* status)
 {
 	if (cpu->pipeline[EX].is_nop)
-		return ;
+		return;
 
 	check_DM_WB_to_EX_fwd(cpu);
 	check_EX_DM_to_EX_fwd(cpu);
-	alu_calculate(cpu);
+	*status |= alu_calculate(cpu);
 
 	/* DEBUG("EX\n"); */
 	/* DEBUG("\tins: %s\n", cpu->pipeline[EX].ins.name); */
@@ -186,7 +191,7 @@ void execute(struct cpu_struct* cpu)
 	/* DEBUG("\tdata2_fwd: %d\n", cpu->pipeline[EX].data2.fwd.has_fwd); */
 }
 
-void data_mem(struct cpu_struct* cpu)
+void data_mem(struct cpu_struct* cpu, int* status)
 {
 	if (cpu->pipeline[DM].is_nop)
 		return;
@@ -197,30 +202,30 @@ void data_mem(struct cpu_struct* cpu)
 
 	switch (cpu->pipeline[DM].ins.op) {
 		case LW:
-			*read_data = load_memory(cpu, addr, 4);
+			*read_data = load_memory(cpu, addr, 4, status);
 			break;
 		case LH:
-			*read_data = load_memory(cpu, addr, 2);
+			*read_data = load_memory(cpu, addr, 2, status);
 			*read_data = sign_extend(*read_data, 16);
 			break;
 		case LHU:
-			*read_data = load_memory(cpu, addr, 2);
+			*read_data = load_memory(cpu, addr, 2, status);
 			break;
 		case LB:
-			*read_data = load_memory(cpu, addr, 1);
+			*read_data = load_memory(cpu, addr, 1, status);
 			*read_data = sign_extend(*read_data, 8);
 			break;
 		case LBU:
-			*read_data = load_memory(cpu, addr, 1);
+			*read_data = load_memory(cpu, addr, 1, status);
 			break;
 		case SW:
-			 save_memory(cpu, write_data, addr, 4);
+			 save_memory(cpu, write_data, addr, 4, status);
 			 break;
 		case SH:
-			 save_memory(cpu, write_data, addr, 2);
+			 save_memory(cpu, write_data, addr, 2, status);
 			 break;
 		case SB:
-			 save_memory(cpu, write_data, addr, 1);
+			 save_memory(cpu, write_data, addr, 1, status);
 			 break;
 	}
 
@@ -233,7 +238,7 @@ void data_mem(struct cpu_struct* cpu)
 
 }
 
-void write_back(struct cpu_struct* cpu)
+void write_back(struct cpu_struct* cpu, int* status)
 {
 	if (cpu->pipeline[WB].is_nop)
 		return;
@@ -241,8 +246,13 @@ void write_back(struct cpu_struct* cpu)
 	word_t write_data = which_write_data(cpu);
 	int write_reg = cpu->pipeline[WB].write_reg;
 
-	if (has_write_reg(cpu->pipeline[WB].ins))
-		cpu->reg[write_reg] = write_data;
+	if (has_write_reg(cpu->pipeline[WB].ins)) {
+		if (write_reg == 0) {
+			*status |= WRITE_REG_ZERO;
+		} else {
+			cpu->reg[write_reg] = write_data;
+		}
+	}
 
 	// DEBUG("WB\n");
 	// DEBUG("\t0x%08x\n", cpu->pipeline[WB].ins.hex);

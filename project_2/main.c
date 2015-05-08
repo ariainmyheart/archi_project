@@ -1,5 +1,10 @@
 #include <stdio.h>
 #include "cpu.h"
+#include "error.h"
+
+static const char* stage_name[] = {
+	"IF", "ID", "EX", "DM", "WB"
+};
 
 void register_snapshot(struct cpu_struct* cpu, int cycle, FILE* snap)
 {
@@ -58,11 +63,14 @@ int main()
 	FILE* err = fopen("error_dump.rpt", "w");
 	struct cpu_struct* cpu = init_cpu();
 	int cycle = 0;
-	while (!is_halt(cpu)) {
+	int flag = 0;
+	int status;
+	while (!is_halt(cpu) && !flag) {
 		register_snapshot(cpu, cycle++, snap);
-		cpu_cycle(cpu);
+		status = cpu_cycle(cpu);
 		pipeline_snapshot(cpu, snap);
 		cpu_next_cycle(cpu);
+		flag = error_dump(err, cycle, status);
 	}
 	register_snapshot(cpu, cycle, snap);
 	ins_decode(cpu);
