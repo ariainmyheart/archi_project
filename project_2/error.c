@@ -37,9 +37,6 @@ int error_dump(FILE* err, int cycle, int status)
 	if (status & WRITE_REG_ZERO) {
 		fprintf(err, "In cycle %d: Write $0 Error\n", cycle);
 	}
-	if (status & NUM_OVERFLOW) {
-		fprintf(err, "In cycle %d: Number Overflow\n", cycle);
-	}
 	if (status & ADDR_OVERFLOW) {
 		fprintf(err, "In cycle %d: Address Overflow\n", cycle);
 		flag = 1;
@@ -47,6 +44,9 @@ int error_dump(FILE* err, int cycle, int status)
 	if (status & DATA_MISALIGNED) {
 		fprintf(err, "In cycle %d: Misalignment Error\n", cycle);
 		flag = 1;
+	}
+	if (status & NUM_OVERFLOW) {
+		fprintf(err, "In cycle %d: Number Overflow\n", cycle);
 	}
 	return flag;
 }
