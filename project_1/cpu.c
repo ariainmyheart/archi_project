@@ -47,6 +47,17 @@ void decode(struct cpu_struct* cpu, word_t ins)
 	cpu->current_ins.imm = sign_extend(extract(ins, 15, 0), 16);
 	cpu->current_ins.immu = extract(ins, 15, 0);
 	cpu->current_ins.addr = extract(ins, 25, 0);
+
+	if (cpu->current_ins.op == 0 &&
+	    cpu->current_ins.rt == 0 &&
+	    cpu->current_ins.rd == 0 &&
+	    cpu->current_ins.shamt == 0 &&
+	    cpu->current_ins.funct == 0) {
+	//	printf("NOP: %08x\n", ins);
+		cpu->current_ins.is_nop = 1;
+	} else {
+		cpu->current_ins.is_nop = 0;
+	}
 }
 
 int execute(struct cpu_struct* cpu)
@@ -91,10 +102,14 @@ void save_memory(struct cpu_struct* cpu, word_t value, word_t addr, int byte, in
 	}
 }
 
-void write_register(struct cpu_struct* cpu, int num, word_t value, int* status)
+void write_register(struct cpu_struct* cpu, int num, word_t value, int* status, int is_nop)
 {
 	if (num == 0) {
-		*status |= WRITE_REG_ZERO;
+		if (!is_nop) {
+			*status |= WRITE_REG_ZERO;
+		} else {
+			*status |= IS_NOP;
+		}
 	} else {
 		cpu->reg[num] = value;
 	}

@@ -48,6 +48,9 @@ int error_dump(FILE* err, int cycle, int status)
 		fprintf(err, "In cycle %d: Misalignment Error\n", cycle);
 		flag = 1;
 	}
+	if (status & IS_NOP) {
+//		printf("In cycle %d: NOP\n", cycle);
+	}
 	return flag;
 }
 

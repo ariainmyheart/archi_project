@@ -23,6 +23,6 @@ int j_type(struct cpu_struct* cpu);
 int r_type(struct cpu_struct* cpu);
 word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status);
 void save_memory(struct cpu_struct* cpu, word_t value, word_t addr, int byte, int* status);
-void write_register(struct cpu_struct* cpu, int num, word_t value, int* status);
+void write_register(struct cpu_struct* cpu, int num, word_t value, int* status, int is_nop);
 
 #endif

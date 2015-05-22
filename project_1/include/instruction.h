@@ -50,6 +50,7 @@ struct ins_struct {
 	int imm;
 	int immu;
 	int addr;
+	int is_nop;
 };
 
 int extract(word_t ins, int left, int right);
