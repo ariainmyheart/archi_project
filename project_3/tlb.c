@@ -10,8 +10,10 @@ int check_tlb_hit(struct tlb_struct* tlb, word_t addr, int cycle)
 		if (tlb->entry[i].valid && tlb->entry[i].tag == vpn) {
 			tlb->entry[i].last_cycle = cycle;
 			/* printf("hit\n"); */
+			tlb->hit++;
 			return 1;
 		}
+	tlb->miss++;
 	return 0;
 }
 
