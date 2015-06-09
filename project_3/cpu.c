@@ -27,8 +27,8 @@ void free_cpu(struct cpu_struct* cpu)
 
 word_t fetch(struct cpu_struct* cpu, int cycle)
 {
-	if (!check_tlb(&cpu->tlb, cpu->pc, cycle))
-		check_tlb(&cpu->pte, cpu->pc, cycle);
+	check_addr(&cpu->i_mem, cpu->pc, cycle);
+
 	word_t ins = 0;
 	int i;
 	for (i = 0; i < 4; i++) {

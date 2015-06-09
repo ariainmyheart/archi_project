@@ -10,8 +10,8 @@ struct cpu_struct {
 	byte_t ins[1024];
 	byte_t mem[1024];
 	struct ins_struct current_ins;
-	struct tlb_struct tlb;
-	struct tlb_struct pte;
+	struct mem_struct i_mem;
+	struct mem_struct d_mem;
 };
 
 int sign_extend(int num, int len);

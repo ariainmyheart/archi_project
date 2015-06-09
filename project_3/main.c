@@ -19,10 +19,17 @@ int main()
 	FILE* snap = fopen("snapshot.rpt", "w");
 	FILE* err = fopen("error_dump.rpt", "w");
 	struct cpu_struct* cpu = alloc_cpu();
-	cpu->tlb.page_size = 8;
-	cpu->tlb.tlb_size = 1024 / 8 / 4;
-	cpu->pte.page_size = 8;
-	cpu->pte.tlb_size = 1024 / 8;
+
+	cpu->i_mem.tlb.page_size = 8;
+	cpu->i_mem.tlb.tlb_size = 1024 / 8 / 4;
+
+	cpu->i_mem.pte.page_size = 8;
+	cpu->i_mem.pte.ppn_size = 64 / 8;
+
+	cpu->i_mem.cache.set_size = 4;
+	cpu->i_mem.cache.associative = 4;
+	cpu->i_mem.cache.block_size = 4;
+
 	word_t ins;
 	int status, flag = 0;
 	int cycle = 0;
@@ -34,10 +41,12 @@ int main()
 	}
 	if (!flag)
 		snapshot(cpu, cycle++, snap);
-	printf("tlb hit %d\n", cpu->tlb.hit);
-	printf("tlb miss %d\n", cpu->tlb.miss);
-	printf("pte hit %d\n", cpu->pte.hit);
-	printf("pte miss %d\n", cpu->pte.miss);
+	printf("tlb hit %d\n", cpu->i_mem.tlb.hit);
+	printf("tlb miss %d\n", cpu->i_mem.tlb.miss);
+	printf("pte hit %d\n", cpu->i_mem.pte.hit);
+	printf("pte miss %d\n", cpu->i_mem.pte.miss);
+	printf("cache hit %d\n", cpu->i_mem.cache.hit);
+	printf("cache miss %d\n", cpu->i_mem.cache.miss);
 	free_cpu(cpu);
 	fclose(snap);
 	fclose(err);
