@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "include/instruction.h"
 #include "include/cpu.h"
 #include "include/error.h"
@@ -36,32 +37,40 @@ void report(struct cpu_struct* cpu, FILE* rpt)
 	fprintf(rpt, "# misses: %u\n\n", cpu->d_mem.pte.miss);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	FILE* snap = fopen("snapshot.rpt", "w");
 	FILE* err = fopen("error_dump.rpt", "w");
 	FILE* rpt = fopen("report.rpt", "w");
-	struct cpu_struct* cpu = alloc_cpu();
+	struct cpu_struct* cpu;
 
-	cpu->i_mem.tlb.page_size = 8;
-	cpu->i_mem.tlb.tlb_size = 1024 / 8 / 4;
+	int cpu_args[] = {64, 32, 8, 16, 16, 4, 4, 16, 4, 1};
+	if (argc != 1) {
+		int i;
+		for (i = 1; i <= 10; i++)
+			cpu_args[i-1] = atoi(argv[i]);
+	}
+	cpu = alloc_cpu(cpu_args);
 
-	cpu->i_mem.pte.page_size = 8;
-	cpu->i_mem.pte.ppn_size = 64 / 8;
+	/* cpu->i_mem.tlb.page_size = 8; */
+	/* cpu->i_mem.tlb.tlb_size = 1024 / 8 / 4; */
 
-	cpu->i_mem.cache.set_size = 4;
-	cpu->i_mem.cache.associative = 4;
-	cpu->i_mem.cache.block_size = 4;
+	/* cpu->i_mem.pte.page_size = 8; */
+	/* cpu->i_mem.pte.ppn_size = 64 / 8; */
 
-	cpu->d_mem.tlb.page_size = 16;
-	cpu->d_mem.tlb.tlb_size = 1024 / 16 / 4;
+	/* cpu->i_mem.cache.set_size = 1; */
+	/* cpu->i_mem.cache.associative = 4; */
+	/* cpu->i_mem.cache.block_size = 4; */
 
-	cpu->d_mem.pte.page_size = 16;
-	cpu->d_mem.pte.ppn_size = 32 / 16;
+	/* cpu->d_mem.tlb.page_size = 16; */
+	/* cpu->d_mem.tlb.tlb_size = 1024 / 16 / 4; */
 
-	cpu->d_mem.cache.set_size = 4;
-	cpu->d_mem.cache.associative = 1;
-	cpu->d_mem.cache.block_size = 4;
+	/* cpu->d_mem.pte.page_size = 16; */
+	/* cpu->d_mem.pte.ppn_size = 32 / 16; */
+
+	/* cpu->d_mem.cache.set_size = 4; */
+	/* cpu->d_mem.cache.associative = 1; */
+	/* cpu->d_mem.cache.block_size = 4; */
 
 	word_t ins;
 	int status, flag = 0;

@@ -16,7 +16,7 @@ struct cpu_struct {
 };
 
 int sign_extend(int num, int len);
-struct cpu_struct* alloc_cpu();
+struct cpu_struct* alloc_cpu(int args[]);
 void free_cpu(struct cpu_struct* cpu);
 void free_cpu(struct cpu_struct* cpu);
 word_t fetch(struct cpu_struct* cpu);

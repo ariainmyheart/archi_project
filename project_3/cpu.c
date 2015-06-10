@@ -11,12 +11,27 @@ int sign_extend(int num, int len)
 	return (num << (32-len)) >> (32-len);
 }
 
-struct cpu_struct* alloc_cpu()
+void cpu_mem_init_args(struct mem_struct* mem, int mem_size, int page_size, int cache_size, int block_size, int associative)
+{
+	mem->tlb.page_size = page_size;
+	mem->tlb.tlb_size = 1024 / page_size / 4;
+
+	mem->pte.page_size = page_size;
+	mem->pte.ppn_size = mem_size / page_size;
+
+	mem->cache.set_size = cache_size / associative / block_size;
+	mem->cache.associative = associative;
+	mem->cache.block_size = block_size;
+}
+
+struct cpu_struct* alloc_cpu(int args[])
 {
 	struct cpu_struct* cpu = (struct cpu_struct*)malloc(sizeof(struct cpu_struct));
 	memset(cpu, 0, sizeof(struct cpu_struct));
 	cpu->pc = init_mem(cpu->ins, 'i');
 	cpu->reg[29] = init_mem(cpu->mem, 'd');
+	cpu_mem_init_args(&cpu->i_mem, args[0], args[2], args[4], args[5], args[6]);
+	cpu_mem_init_args(&cpu->d_mem, args[1], args[3], args[7], args[8], args[9]);
 	return cpu;
 }
 
@@ -85,6 +100,7 @@ word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status)
 	if (flag) return 0;
 
 	check_addr(&cpu->d_mem, addr, cpu->cycle);
+	/* printf("%d\n", addr); */
 
 	int i;
 	for (i = 0; i < byte; i++) {
@@ -101,6 +117,7 @@ void save_memory(struct cpu_struct* cpu, word_t value, word_t addr, int byte, in
 	if (flag) return;
 
 	check_addr(&cpu->d_mem, addr, cpu->cycle);
+	/* printf("%d\n", addr); */
 
 	int i;
 	for (i = byte-1; i >= 0; i--) {

@@ -108,8 +108,9 @@ void page_fault(struct cache_struct* cache, int swap_ppn, struct tlb_struct* tlb
 int check_cache(struct cache_struct* cache, word_t paddr, int cycle)
 {
 	/* printf("cache\n"); */
-	int tag = paddr / cache->set_size;
-	int index = paddr % cache->set_size * cache->associative;
+	int paddr_b = paddr / cache->block_size;
+	int tag = paddr_b / cache->set_size;
+	int index = paddr_b % cache->set_size * cache->associative;
 	if (check_hit(cache->entry+index, cache->associative, tag, cycle) != -1) {
 		cache->hit++;
 		return 1;
