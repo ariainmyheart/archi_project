@@ -12,13 +12,14 @@ struct cpu_struct {
 	struct ins_struct current_ins;
 	struct mem_struct i_mem;
 	struct mem_struct d_mem;
+	int cycle;
 };
 
 int sign_extend(int num, int len);
 struct cpu_struct* alloc_cpu();
 void free_cpu(struct cpu_struct* cpu);
 void free_cpu(struct cpu_struct* cpu);
-word_t fetch(struct cpu_struct* cpu, int cycle);
+word_t fetch(struct cpu_struct* cpu);
 void decode(struct cpu_struct* cpu, word_t ins);
 int execute(struct cpu_struct* cpu);
 int i_type(struct cpu_struct* cpu);

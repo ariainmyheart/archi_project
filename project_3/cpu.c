@@ -25,9 +25,9 @@ void free_cpu(struct cpu_struct* cpu)
 	free(cpu);
 }
 
-word_t fetch(struct cpu_struct* cpu, int cycle)
+word_t fetch(struct cpu_struct* cpu)
 {
-	check_addr(&cpu->i_mem, cpu->pc, cycle);
+	check_addr(&cpu->i_mem, cpu->pc, cpu->cycle);
 
 	word_t ins = 0;
 	int i;
@@ -84,6 +84,8 @@ word_t load_memory(struct cpu_struct* cpu, word_t addr, int byte, int* status)
 	flag = check_addr_overflow(addr, byte, status) | check_data_misaligned(addr, byte, status);
 	if (flag) return 0;
 
+	check_addr(&cpu->d_mem, addr, cpu->cycle);
+
 	int i;
 	for (i = 0; i < byte; i++) {
 		value <<= 8;
@@ -97,6 +99,8 @@ void save_memory(struct cpu_struct* cpu, word_t value, word_t addr, int byte, in
 	int flag = 0;
 	flag = check_addr_overflow(addr, byte, status) | check_data_misaligned(addr, byte, status);
 	if (flag) return;
+
+	check_addr(&cpu->d_mem, addr, cpu->cycle);
 
 	int i;
 	for (i = byte-1; i >= 0; i--) {

@@ -13,8 +13,7 @@ int check_hit(struct entry_struct* row, int size, int tag, int cycle)
 		}
 	}
 	/* printf("miss\n"); */
-	return -1;
-}
+	return -1; }
 
 int find_empty(struct entry_struct* row, int size, int tag, int cycle)
 {
@@ -32,7 +31,7 @@ int find_empty(struct entry_struct* row, int size, int tag, int cycle)
 	return -1;
 }
 
-int find_lru(struct entry_struct* row, int size, int tag, int cycle)
+int find_lru(struct entry_struct* row, int size, int tag, int cycle, int* kicked_out)
 {
 	int i;
 	int lru_index = -1;
@@ -43,6 +42,8 @@ int find_lru(struct entry_struct* row, int size, int tag, int cycle)
 			lru_cycle = row[i].last_cycle;
 		}
 	}
+	if (kicked_out)
+		*kicked_out = row[lru_index].tag;
 	row[lru_index].tag = tag;
 	row[lru_index].last_cycle = cycle;
 	/* printf("lru %d\n", lru_index); */
@@ -59,11 +60,11 @@ int check_tlb(struct tlb_struct* tlb, word_t addr, int cycle)
 	}
 	tlb->miss++;
 	if (find_empty(tlb->entry, tlb->tlb_size, tag, cycle) == -1)
-		find_lru(tlb->entry, tlb->tlb_size, tag, cycle);
+		find_lru(tlb->entry, tlb->tlb_size, tag, cycle, NULL);
 	return 0;
 }
 
-int check_pte(struct pte_struct* pte, word_t addr, int cycle, word_t* paddr, int* swap)
+int check_pte(struct pte_struct* pte, word_t addr, int cycle, word_t* paddr, int* swap_ppn, int* swap_vpn, int* has_swap)
 {
 	/* printf("pte\n"); */
 	int ppn;
@@ -74,14 +75,15 @@ int check_pte(struct pte_struct* pte, word_t addr, int cycle, word_t* paddr, int
 		return 1;
 	}
 	if ((ppn = find_empty(pte->entry, pte->ppn_size, vpn, cycle)) == -1) {
-		ppn = find_lru(pte->entry, pte->ppn_size, vpn, cycle);
+		ppn = find_lru(pte->entry, pte->ppn_size, vpn, cycle, swap_vpn);
+		*has_swap = 1;
 	}
 	*paddr = ppn * pte->page_size + offset;
-	*swap = ppn;
+	*swap_ppn = ppn;
 	return 0;
 }
 
-void page_fault(struct cache_struct* cache, int swap, int page_size)
+void page_fault(struct cache_struct* cache, int swap_ppn, struct tlb_struct* tlb, int swap_vpn, int page_size)
 {
 	int i, j;
 	for (i = 0; i < cache->set_size; i++) {
@@ -90,12 +92,17 @@ void page_fault(struct cache_struct* cache, int swap, int page_size)
 			int tag = cache->entry[x].tag;
 			int paddr = tag * cache->set_size + i;
 			int ppn = paddr / page_size;
-			if (ppn == swap) {
+			if (ppn == swap_ppn) {
 				cache->entry[x].valid = 0;
 				/* printf("pf %d\n", ppn); */
 			}
 		}
 	}
+	for (i = 0; i < tlb->tlb_size; i++)
+		if (tlb->entry[i].valid && tlb->entry[i].tag == swap_vpn) {
+			tlb->entry[i].valid = 0;
+			/* printf("pf tlb %d\n", swap_vpn); */
+		}
 }
 
 int check_cache(struct cache_struct* cache, word_t paddr, int cycle)
@@ -109,7 +116,7 @@ int check_cache(struct cache_struct* cache, word_t paddr, int cycle)
 	}
 	cache->miss++;
 	if (find_empty(cache->entry+index, cache->associative, tag, cycle) == -1) {
-		find_lru(cache->entry+index, cache->associative, tag, cycle);
+		find_lru(cache->entry+index, cache->associative, tag, cycle, NULL);
 	}
 	return 0;
 }
@@ -117,15 +124,18 @@ int check_cache(struct cache_struct* cache, word_t paddr, int cycle)
 void check_addr(struct mem_struct* mem, word_t addr, int cycle)
 {
 	word_t paddr;
-	int swap;
+	int has_swap = 0;
+	int swap_ppn, swap_vpn;
 	if (check_tlb(&mem->tlb, addr, cycle)) {
-		check_pte(&mem->pte, addr, cycle, &paddr, &swap);
+		check_pte(&mem->pte, addr, cycle, &paddr, &swap_ppn, &swap_vpn, &has_swap);
 	} else {
-		if (check_pte(&mem->pte, addr, cycle, &paddr, &swap)) {
+		if (check_pte(&mem->pte, addr, cycle, &paddr, &swap_ppn, &swap_vpn, &has_swap)) {
 			mem->pte.hit++;
 		} else {
 			mem->pte.miss++;
-			page_fault(&mem->cache, swap, mem->pte.page_size);
+			if (has_swap) {
+				page_fault(&mem->cache, swap_ppn, &mem->tlb, swap_vpn, mem->pte.page_size);
+			}
 		}
 	}
 	/* printf("paddr %d\n", paddr); */

@@ -40,10 +40,6 @@ struct mem_struct {
 	struct cache_struct cache;
 };
 
-int check_tlb(struct tlb_struct* tlb, word_t addr, int cycle);
-int check_pte(struct pte_struct* pte, word_t addr, int cycle, word_t* paddr, int* swap);
-int check_cache(struct cache_struct* cache, word_t paddr, int cycle);
-void page_fault(struct cache_struct* cache, int swap, int page_size);
 void check_addr(struct mem_struct* mem, word_t addr, int cycle);
 
 #endif
